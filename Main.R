@@ -26,6 +26,9 @@ unique_values_all <- lapply(czynniki2[columns_to_check], unique)
 
 # Wyświetlenie liczby unikalnych wartości dla każdej kolumny
 print(unique_values_all)
+install.packages("naniar")
+library(naniar)
+vis_miss(czynniki2)
 
 #Czyszczenie danych
 median_sleep <- median(czynniki2$Sleep_Hours, na.rm = TRUE)
