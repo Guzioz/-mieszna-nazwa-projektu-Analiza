@@ -32,32 +32,55 @@ install.packages("naniar")
 library(naniar)
 vis_miss(czynniki2, cluster = TRUE, sort_miss = TRUE)
 
+#Cyszczenie danych Sleep_Hours
+install.packages("mice")
+library(mice)
+# Załaduj pakiet mice
+library(mice)
 
-#Czyszczenie danych
-median_sleep <- median(czynniki2$Sleep_Hours, na.rm = TRUE)
-replace_with_random <- function() {
-  return(median_sleep + sample(c(-1, 0, 1), 1))
-}
-czynniki2$Sleep_Hours <- ifelse(
-  is.na(czynniki2$Sleep_Hours),
-  replace_with_random(),
-  czynniki2$Sleep_Hours
-)
-LICZBA_NA2 <- data.frame(liczba_brakow = colSums(is.na(czynniki2)))
-LICZBA_NA2
-czynniki3 <- subset(czynniki2, !is.na(Family_Income))
-LICZBA_NA2 <- data.frame(liczba_brakow = colSums(is.na(czynniki3)))
-LICZBA_NA2
-median_sleep <- median(czynniki3$Sleep_Hours, na.rm = TRUE)
-replace_with_random <- function() {
-  return(median_sleep + sample(c(-1, 0, 1), 1))
-}
-czynniki3$Sleep_Hours <- ifelse(
-  is.na(czynniki2$Sleep_Hours),
-  replace_with_random(),
-  czynniki3$Sleep_Hours
-)
-czynniki3 <- subset(czynniki3, !is.na(Exam_Score))
+# Upewnijmy się, że zmienne kategoryczne mają odpowiedni typ i poziomy
+czynniki2$Family_Income <- factor(czynniki2$Family_Income, levels = c("Low", "Medium", "High"))
+czynniki2$Teacher_Quality <- factor(czynniki2$Teacher_Quality, levels = c("Low", "Medium", "High"))
+czynniki2$Parental_Education_Level <- factor(czynniki2$Parental_Education_Level, levels = c("High School", "College", "Postgraduate"))
+czynniki2$Distance_from_Home <- factor(czynniki2$Distance_from_Home, levels = c("Near", "Moderate", "Far"))
+czynniki2$Motivation_Level <- factor(czynniki2$Motivation_Level, levels = c("Low", "Medium", "High"))
+czynniki2$Internet_Access <- factor(czynniki2$Internet_Access, levels = c("Yes", "No"))
+czynniki2$Learning_Disabilities <- factor(czynniki2$Learning_Disabilities, levels = c("No", "Yes"))
+czynniki2$School_Type <- factor(czynniki2$School_Type, levels = c("Public", "Private"))
+czynniki2$Extracurricular_Activities <- factor(czynniki2$Extracurricular_Activities, levels = c("No", "Yes"))
+czynniki2$Peer_Influence <- factor(czynniki2$Peer_Influence, levels = c("Positive", "Negative", "Neutral"))
+czynniki2$Gender <- factor(czynniki2$Gender, levels = c("Male", "Female"))
+
+# Sprawdzenie typu zmiennych po zmianach
+str(czynniki2)
+
+# Definiowanie metod imputacji
+method <- make.method(czynniki2)
+
+# Ustalamy metodę imputacji dla zmiennych numerycznych (np. Sleep_Hours, Previous_Scores) jako 'pmm'
+method[c("Sleep_Hours", "Previous_Scores", "Tutoring_Sessions", "Physical_Activity", "Exam_Score")] <- "pmm"
+
+# Ustalamy metodę imputacji dla zmiennych kategorycznych:
+# 'logreg' dla zmiennych kategorycznych z dwoma poziomami (np. Gender, Internet_Access)
+method[c("Internet_Access", "Gender", "Extracurricular_Activities")] <- "logreg"
+
+# 'polyreg' dla zmiennych kategorycznych z więcej niż dwoma poziomami (np. Family_Income, Teacher_Quality, Parental_Education_Level, Distance_from_Home)
+method[c("Family_Income", "Teacher_Quality", "Parental_Education_Level", "Distance_from_Home", 
+         "Motivation_Level", "Learning_Disabilities", "School_Type", "Peer_Influence")] <- "polyreg"
+
+# Sprawdzenie przypisanych metod
+print(method)
+
+# Imputacja danych
+czynnikisleep <- mice(czynniki2, m = 5, method = method, seed = 500)
+
+# Pobranie pierwszego zestawu danych z imputacjami
+czynniki3 <- complete(czynnikisleep, 1)
+
+# Sprawdzamy wynik imputacji dla zmiennych
+head(czynniki3)
+LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki3)))
+LICZBA_NA
 
 #Standaryzowanie danych
 
@@ -110,3 +133,53 @@ Wyja
 
 czynniki3$School_Type <- ifelse(czynniki3$School_Type == "Public", 0,
                                 ifelse(czynniki3$School_Type == "Private", 1, NA))
+# Zainstaluj pakiet gridExtra, jeśli jeszcze go nie masz
+install.packages("gridExtra")
+
+# Załaduj pakiet gridExtra
+library(gridExtra)
+# Rysowanie boxplotów dla zmiennej Exam_Score
+b1 <- ggplot(czynniki3, aes(y = Exam_Score)) +
+  geom_boxplot() +
+  labs(title = "Exam_Score")
+
+# Rysowanie histogramów dla zmiennej Exam_Score
+h1 <- ggplot(czynniki3) +
+  aes(x = Exam_Score) +
+  geom_histogram(bins = 30, fill = "#0c4c8a") +
+  theme_minimal()
+
+# Wykorzystanie grid.arrange do rozmieszczenia wykresów
+grid.arrange(b1, h1, nrow = 1)
+# Liczenie wartości w Exam_Score poniżej 60
+count_below_60 <- sum(czynniki3$Exam_Score < 60, na.rm = TRUE)
+
+# Wyświetlenie wyniku
+count_below_60
+
+# Liczenie wartości w Exam_Score powyżej lub równe 60
+count_above_or_equal_60 <- sum(czynniki3$Exam_Score >= 60, na.rm = TRUE)
+
+# Wyświetlenie wyniku
+count_above_or_equal_60
+
+# Załaduj pakiet dplyr, jeśli jeszcze tego nie zrobiłeś
+library(dplyr)
+
+# Filtrowanie danych, aby zawierały tylko wartości Exam_Score >= 60
+czynniki_filtered <- czynniki3 %>% filter(Exam_Score >= 60)
+
+# Rysowanie boxplotów dla zmiennej Exam_Score (po filtracji)
+b1 <- ggplot(czynniki_filtered, aes(y = Exam_Score)) +
+  geom_boxplot() +
+  labs(title = "Exam_Score (>= 60)")
+
+# Rysowanie histogramów dla zmiennej Exam_Score (po filtracji)
+h1 <- ggplot(czynniki_filtered) +
+  aes(x = Exam_Score) +
+  geom_histogram(bins = 30, fill = "#0c4c8a") +
+  theme_minimal() +
+  labs(title = "Exam_Score Distribution (>= 60)")
+
+# Wyświetlanie wykresów
+grid.arrange(b1, h1, nrow = 1)
