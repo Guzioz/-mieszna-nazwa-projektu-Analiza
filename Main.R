@@ -30,7 +30,8 @@ print(unique_values_all)
 #Mapa brakujących wartości
 install.packages("naniar")
 library(naniar)
-vis_miss(czynniki2)
+vis_miss(czynniki2, cluster = TRUE, sort_miss = TRUE)
+
 
 #Czyszczenie danych
 median_sleep <- median(czynniki2$Sleep_Hours, na.rm = TRUE)
