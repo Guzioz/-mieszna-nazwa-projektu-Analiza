@@ -27,6 +27,9 @@ unique_values_all <- lapply(czynniki2[columns_to_check], unique)
 # Wyświetlenie liczby unikalnych wartości dla każdej kolumny
 print(unique_values_all)
 
+# Usuwamy wiersze, w których 'ExamScore' jest większe niż 100
+data_cleaned <- subset(czynniki2, Exam_Score <= 100)
+
 #Mapa brakujących wartości
 install.packages("naniar")
 library(naniar)
@@ -183,3 +186,13 @@ h1 <- ggplot(czynniki_filtered) +
 
 # Wyświetlanie wykresów
 grid.arrange(b1, h1, nrow = 1)
+# Tworzymy trzy podzbiory w zależności od wartości 'Exam Score'
+
+below_60 <- subset(czynniki3, Exam_Score < 60)
+between_60_80 <- subset(czynniki3, Exam_Score >= 60 & Exam_Score <= 80)
+between_80_100 <- subset(czynniki3, Exam_Score > 80 & Exam_Score <= 100)
+
+# Możesz teraz sprawdzić, jak wyglądają te zbiory danych
+head(below_60)
+head(between_60_80)
+head(between_80_100)
