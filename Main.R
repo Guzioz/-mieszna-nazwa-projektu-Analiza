@@ -159,22 +159,36 @@ grid.arrange(b1, h1, nrow = 1)
 # Załaduj wymagane biblioteki
 library(ggplot2)
 
-# Lista zmiennych kategorycznych
+# Lista zmiennych kategorycznych bez Gender
 categorical_vars <- c("Family_Income", "Teacher_Quality", "Parental_Education_Level", 
                       "Distance_from_Home", "Motivation_Level", "School_Type", 
-                      "Peer_Influence", "Gender")
+                      "Peer_Influence")
 
-#Wykresy słupkowe
-for (i in seq_along(categorical_vars)) {
-  var <- categorical_vars[i]
-  plot <- ggplot(czynniki3, aes_string(x = var, fill = var)) +  # Użycie zmiennej kategorycznej do nadania koloru
+# Kolory dla Gender: 0 = różowy (Female), 1 = niebieski (Male)
+gender_colors <- c("0" = "pink", "1" = "blue")
+
+# Kolory dla pozostałych zmiennych: 0 = szary, 1 = zielony, 2 = żółty, 3 = czerwony
+fill_colors <- c("0" = "gray", "1" = "green", "2" = "yellow", "3" = "red")
+
+# Wykres dla Gender
+gender_plot <- ggplot(czynniki3, aes(x = Gender, fill = as.factor(Gender))) +
+  geom_bar() +
+  scale_fill_manual(values = gender_colors) +
+  labs(title = "Bar Plot of Gender", x = "Gender", y = "Count") +
+  theme_minimal()
+print(gender_plot)
+
+# Tworzenie wykresów słupkowych dla każdej zmiennej kategorycznej z odpowiednimi kolorami
+for (var in categorical_vars) {
+  plot <- ggplot(czynniki3, aes_string(x = var, fill = as.factor(czynniki3[[var]]))) +
     geom_bar() +
+    scale_fill_manual(values = fill_colors) +
     labs(title = paste("Bar Plot of", var), x = var, y = "Count") +
-    scale_fill_manual(values = rainbow(length(unique(czynniki3[[var]])))) +  # Użycie różnych kolorów dla każdej kategorii
     theme_minimal()
   
   print(plot)
 }
+
 
 #Wykresy pudełkowe dla facktorów
 for (i in seq_along(categorical_vars)) {
