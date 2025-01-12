@@ -141,6 +141,7 @@ install.packages("gridExtra")
 
 # Załaduj pakiet gridExtra
 library(gridExtra)
+library(ggplot2)
 # Rysowanie boxplotów dla zmiennej Exam_Score
 b1 <- ggplot(czynniki3, aes(y = Exam_Score)) +
   geom_boxplot() +
@@ -154,45 +155,3 @@ h1 <- ggplot(czynniki3) +
 
 # Wykorzystanie grid.arrange do rozmieszczenia wykresów
 grid.arrange(b1, h1, nrow = 1)
-# Liczenie wartości w Exam_Score poniżej 60
-count_below_60 <- sum(czynniki3$Exam_Score < 60, na.rm = TRUE)
-
-# Wyświetlenie wyniku
-count_below_60
-
-# Liczenie wartości w Exam_Score powyżej lub równe 60
-count_above_or_equal_60 <- sum(czynniki3$Exam_Score >= 60, na.rm = TRUE)
-
-# Wyświetlenie wyniku
-count_above_or_equal_60
-
-# Załaduj pakiet dplyr, jeśli jeszcze tego nie zrobiłeś
-library(dplyr)
-
-# Filtrowanie danych, aby zawierały tylko wartości Exam_Score >= 60
-czynniki_filtered <- czynniki3 %>% filter(Exam_Score >= 60)
-
-# Rysowanie boxplotów dla zmiennej Exam_Score (po filtracji)
-b1 <- ggplot(czynniki_filtered, aes(y = Exam_Score)) +
-  geom_boxplot() +
-  labs(title = "Exam_Score (>= 60)")
-
-# Rysowanie histogramów dla zmiennej Exam_Score (po filtracji)
-h1 <- ggplot(czynniki_filtered) +
-  aes(x = Exam_Score) +
-  geom_histogram(bins = 30, fill = "#0c4c8a") +
-  theme_minimal() +
-  labs(title = "Exam_Score Distribution (>= 60)")
-
-# Wyświetlanie wykresów
-grid.arrange(b1, h1, nrow = 1)
-# Tworzymy trzy podzbiory w zależności od wartości 'Exam Score'
-
-below_60 <- subset(czynniki3, Exam_Score < 60)
-between_60_80 <- subset(czynniki3, Exam_Score >= 60 & Exam_Score <= 80)
-between_80_100 <- subset(czynniki3, Exam_Score > 80 & Exam_Score <= 100)
-
-# Możesz teraz sprawdzić, jak wyglądają te zbiory danych
-head(below_60)
-head(between_60_80)
-head(between_80_100)
