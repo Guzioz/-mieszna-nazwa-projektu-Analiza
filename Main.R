@@ -218,7 +218,7 @@ create_pie_chart <- function(data, var, fill_colors) {
     theme(legend.position = "top")
 }
 
-# Tworzymy wykresy kołowe dla zmiennych: Internet_Access, Learning_Disabilities, Extracurricular_Activities
+# Wykresy kołowe dla zmiennych: Internet_Access, Learning_Disabilities, Extracurricular_Activities
 pie_internet <- create_pie_chart(czynniki3, "Internet_Access", fill_colors)
 pie_learning_disabilities <- create_pie_chart(czynniki3, "Learning_Disabilities", fill_colors)
 pie_extracurricular_activities <- create_pie_chart(czynniki3, "Extracurricular_Activities", fill_colors)
@@ -227,3 +227,30 @@ pie_extracurricular_activities <- create_pie_chart(czynniki3, "Extracurricular_A
 print(pie_internet)
 print(pie_learning_disabilities)
 print(pie_extracurricular_activities)
+
+# Biblioteki
+library(ggplot2)
+
+# Lista zmiennych liczbowych
+numeric_vars <- c("Hours_Studied", "Attendance", "Previous_Scores", "Sleep_Hours", 
+                  "Tutoring_Sessions", "Physical_Activity")
+
+# Histogramy oraz scatter ploty dla każdej zmiennej liczbowej
+for (var in numeric_vars) {
+  
+  # Histogram
+  hist_plot <- ggplot(czynniki3, aes_string(x = var)) +
+    geom_histogram(bins = 30, fill = "#0c4c8a", color = "black") +
+    labs(title = paste("Histogram of", var), x = var, y = "Frequency") +
+    theme_minimal()
+  
+  # Scatter Plot zależny od Exam_Score
+  scatter_plot <- ggplot(czynniki3, aes_string(x = var, y = "Exam_Score")) +
+    geom_point(color = "#0c4c8a") +
+    labs(title = paste("Scatter Plot of Exam_Score vs", var), x = var, y = "Exam Score") +
+    theme_minimal()
+  
+  # Wyświetlanie wykresów 
+  print(hist_plot)  # Wyświetla histogram
+  print(scatter_plot)  # Wyświetla scatter plot
+}
