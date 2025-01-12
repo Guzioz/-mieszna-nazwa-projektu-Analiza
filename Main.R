@@ -202,3 +202,28 @@ for (i in seq_along(categorical_vars)) {
   print(plot)
 }
 
+library(ggplot2)
+
+# Kolory: 0 = niebieski, 1 = błękitny
+fill_colors <- c("0" = "blue", "1" = "lightblue")
+
+# Funkcja do rysowania wykresów kołowych
+create_pie_chart <- function(data, var, fill_colors) {
+  ggplot(data, aes(x = "", fill = as.factor(data[[var]]))) +
+    geom_bar(width = 1, color = "white") +
+    coord_polar(theta = "y") +
+    scale_fill_manual(values = fill_colors) +
+    labs(title = paste("Pie Chart of", var), fill = "Categories") +
+    theme_void() +
+    theme(legend.position = "top")
+}
+
+# Tworzymy wykresy kołowe dla zmiennych: Internet_Access, Learning_Disabilities, Extracurricular_Activities
+pie_internet <- create_pie_chart(czynniki3, "Internet_Access", fill_colors)
+pie_learning_disabilities <- create_pie_chart(czynniki3, "Learning_Disabilities", fill_colors)
+pie_extracurricular_activities <- create_pie_chart(czynniki3, "Extracurricular_Activities", fill_colors)
+
+# Wyświetlamy wykresy
+print(pie_internet)
+print(pie_learning_disabilities)
+print(pie_extracurricular_activities)
