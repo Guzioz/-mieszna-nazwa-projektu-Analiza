@@ -155,3 +155,21 @@ h1 <- ggplot(czynniki3) +
 
 # Wykorzystanie grid.arrange do rozmieszczenia wykresów
 grid.arrange(b1, h1, nrow = 1)
+
+library(ggplot2)
+
+# Lista zmiennych kategorycznych
+categorical_vars <- c("Family_Income", "Teacher_Quality", "Parental_Education_Level", 
+                      "Distance_from_Home", "Motivation_Level", "School_Type", 
+                      "Peer_Influence", "Gender")
+
+# Tworzenie wykresów słupkowych dla każdej zmiennej
+for (var in categorical_vars) {
+  plot <- ggplot(czynniki3, aes_string(x = var)) +
+    geom_bar(fill = "skyblue") +
+    labs(title = paste("Bar Plot of", var), x = var, y = "Count") +
+    theme_minimal()
+  
+  print(plot)
+}
+
