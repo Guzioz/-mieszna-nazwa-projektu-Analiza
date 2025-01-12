@@ -163,13 +163,18 @@ categorical_vars <- c("Family_Income", "Teacher_Quality", "Parental_Education_Le
                       "Distance_from_Home", "Motivation_Level", "School_Type", 
                       "Peer_Influence", "Gender")
 
-# Tworzenie wykresów słupkowych dla każdej zmiennej
-for (var in categorical_vars) {
+# Lista kolorów
+colors <- c("skyblue", "coral", "lightgreen", "orchid", "gold", "lightpink", "lightgrey", "lightblue")
+
+# Tworzenie wykresów słupkowych dla każdej zmiennej z innym kolorem
+for (i in seq_along(categorical_vars)) {
+  var <- categorical_vars[i]
   plot <- ggplot(czynniki3, aes_string(x = var)) +
-    geom_bar(fill = "skyblue") +
+    geom_bar(fill = colors[i]) +
     labs(title = paste("Bar Plot of", var), x = var, y = "Count") +
     theme_minimal()
   
   print(plot)
 }
+
 
