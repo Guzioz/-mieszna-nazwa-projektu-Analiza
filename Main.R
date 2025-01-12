@@ -156,6 +156,7 @@ h1 <- ggplot(czynniki3) +
 # Wykorzystanie grid.arrange do rozmieszczenia wykresów
 grid.arrange(b1, h1, nrow = 1)
 
+# Załaduj wymagane biblioteki
 library(ggplot2)
 
 # Lista zmiennych kategorycznych
@@ -163,15 +164,13 @@ categorical_vars <- c("Family_Income", "Teacher_Quality", "Parental_Education_Le
                       "Distance_from_Home", "Motivation_Level", "School_Type", 
                       "Peer_Influence", "Gender")
 
-# Lista kolorów
-colors <- c("skyblue", "coral", "lightgreen", "orchid", "gold", "lightpink", "lightgrey", "lightblue")
-
-# Tworzenie wykresów słupkowych dla każdej zmiennej z innym kolorem
+# Tworzenie wykresów słupkowych dla każdej zmiennej z różnymi kolorami dla każdego słupka
 for (i in seq_along(categorical_vars)) {
   var <- categorical_vars[i]
-  plot <- ggplot(czynniki3, aes_string(x = var)) +
-    geom_bar(fill = colors[i]) +
+  plot <- ggplot(czynniki3, aes_string(x = var, fill = var)) +  # Użycie zmiennej kategorycznej do nadania koloru
+    geom_bar() +
     labs(title = paste("Bar Plot of", var), x = var, y = "Count") +
+    scale_fill_manual(values = rainbow(length(unique(czynniki3[[var]])))) +  # Użycie różnych kolorów dla każdej kategorii
     theme_minimal()
   
   print(plot)
