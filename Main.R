@@ -164,7 +164,7 @@ categorical_vars <- c("Family_Income", "Teacher_Quality", "Parental_Education_Le
                       "Distance_from_Home", "Motivation_Level", "School_Type", 
                       "Peer_Influence", "Gender")
 
-# Tworzenie wykresów słupkowych dla każdej zmiennej z różnymi kolorami dla każdego słupka
+#Wykresy słupkowe
 for (i in seq_along(categorical_vars)) {
   var <- categorical_vars[i]
   plot <- ggplot(czynniki3, aes_string(x = var, fill = var)) +  # Użycie zmiennej kategorycznej do nadania koloru
@@ -176,4 +176,15 @@ for (i in seq_along(categorical_vars)) {
   print(plot)
 }
 
+#Wykresy pudełkowe dla facktorów
+for (i in seq_along(categorical_vars)) {
+  var <- categorical_vars[i]
+  plot <- ggplot(czynniki3, aes_string(x = var, y = "Exam_Score", fill = var)) +  # Użycie zmiennej kategorycznej do kolorowania
+    geom_boxplot(color = "black") +
+    labs(title = paste("Boxplot of Exam_Score by", var), x = var, y = "Exam Score") +
+    scale_fill_manual(values = rainbow(length(unique(czynniki3[[var]])))) +  # Użycie różnych kolorów dla każdej kategorii
+    theme_minimal()
+  
+  print(plot)
+}
 
