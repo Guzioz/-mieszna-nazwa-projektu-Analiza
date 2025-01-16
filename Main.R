@@ -254,3 +254,53 @@ for (var in numeric_vars) {
   print(hist_plot)  # Wyświetla histogram
   print(scatter_plot)  # Wyświetla scatter plot
 }
+
+#Statystyki opisowe
+# Pakiet
+install.packages("moments")
+library(moments)
+
+# Sprawdźmy dane wejściowe
+str(czynniki3$Exam_Score)  # Sprawdzenie struktury danych
+
+# Obliczanie poszczególnych statystyk krok po kroku
+Min <- min(czynniki3$Exam_Score, na.rm = TRUE)
+Max <- max(czynniki3$Exam_Score, na.rm = TRUE)
+Kwartyl_dolny <- quantile(czynniki3$Exam_Score, 0.25, na.rm = TRUE)
+Mediana <- median(czynniki3$Exam_Score, na.rm = TRUE)
+Kwartyl_gorny <- quantile(czynniki3$Exam_Score, 0.75, na.rm = TRUE)
+Srednia <- mean(czynniki3$Exam_Score, na.rm = TRUE)
+Odch_std <- sd(czynniki3$Exam_Score, na.rm = TRUE)
+IQR_value <- IQR(czynniki3$Exam_Score, na.rm = TRUE)
+Skosnosc <- skewness(czynniki3$Exam_Score, na.rm = TRUE)
+Kurtoza_value <- kurtosis(czynniki3$Exam_Score, na.rm = TRUE)
+
+# Wyświetlanie poszczególnych wyników
+print(c(Min, Max, Kwartyl_dolny, Mediana, Kwartyl_gorny, Srednia, Odch_std, IQR_value, Skosnosc, Kurtoza_value))
+
+# Obliczanie procentowych odchyleń
+Odch_std_pct <- (Odch_std / Srednia) * 100
+Odch_cwiartkowe_pct <- (IQR_value / Mediana) * 100
+Odchylenie_cwiartkowe <- IQR_value / 2
+
+# Wyświetl wyniki obliczeń
+print(c(Odch_std_pct, Odch_cwiartkowe_pct, Odchylenie_cwiartkowe))
+# Stworzenie ramki danych z obliczonymi statystykami
+statystyki <- data.frame(
+  Min = round(Min, 3),
+  Max = round(Max, 3),
+  "Kwartyl dolny" = round(Kwartyl_dolny, 3),
+  Mediana = round(Mediana, 3),
+  "Kwartyl górny" = round(Kwartyl_gorny, 3),
+  Średnia = round(Srednia, 3),
+  "Odch. std." = round(Odch_std, 3),
+  IQR = round(IQR_value, 3),
+  "Skośność" = round(Skosnosc, 3),
+  "Kurtoza" = round(Kurtoza_value, 3),
+  "Odch. std. w %" = round(Odch_std_pct, 3),
+  "Odch. ćwiartkowe w %" = round(Odch_cwiartkowe_pct, 3),
+  "Odchylenie ćwiartkowe" = round(Odchylenie_cwiartkowe, 3)
+)
+
+# Wyświetlenie finalnej tabeli
+print(statystyki)
