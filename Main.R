@@ -124,15 +124,12 @@ czynniki3$Distance_from_Home <- ifelse(czynniki3$Distance_from_Home == "Near", 0
 czynniki3$Parental_Education_Level <- ifelse(czynniki3$Parental_Education_Level == "High School", 0,
                                              ifelse(czynniki3$Parental_Education_Level == "College", 1,
                                                     ifelse(czynniki3$Parental_Education_Level == "Postgraduate", 2, NA)))
-czynniki3$Learning_Disabilities <- ifelse
+czynniki3$Learning_Disabilities <- ifelse(czynniki3$Learning_Disabilities == "Yes", 1, 0)
 
 czynniki3$Peer_Influence <- ifelse(czynniki3$Peer_Influence == "Negative", 0,
                                    ifelse(czynniki3$Peer_Influence == "Neutral", 1,
                                           ifelse(czynniki3$Peer_Influence == "Positive", 2, NA)))
-czynniki3$Gender <- ifelse(
-  czynniki3$Gender == "Male", 1, 0
-)
-Wyja
+czynniki3$Gender <- ifelse(czynniki3$Gender == "Male", 1, 0)
 
 czynniki3$School_Type <- ifelse(czynniki3$School_Type == "Public", 0,
                                 ifelse(czynniki3$School_Type == "Private", 1, NA))
@@ -263,7 +260,7 @@ library(moments)
 # Sprawdźmy dane wejściowe
 str(czynniki3$Exam_Score)  # Sprawdzenie struktury danych
 
-# Obliczanie poszczególnych statystyk krok po kroku
+# Obliczanie poszczególnych statystyk( testowe bo inaczej nie działało)
 Min <- min(czynniki3$Exam_Score, na.rm = TRUE)
 Max <- max(czynniki3$Exam_Score, na.rm = TRUE)
 Kwartyl_dolny <- quantile(czynniki3$Exam_Score, 0.25, na.rm = TRUE)
@@ -275,7 +272,7 @@ IQR_value <- IQR(czynniki3$Exam_Score, na.rm = TRUE)
 Skosnosc <- skewness(czynniki3$Exam_Score, na.rm = TRUE)
 Kurtoza_value <- kurtosis(czynniki3$Exam_Score, na.rm = TRUE)
 
-# Wyświetlanie poszczególnych wyników
+# Wyniki wstępne
 print(c(Min, Max, Kwartyl_dolny, Mediana, Kwartyl_gorny, Srednia, Odch_std, IQR_value, Skosnosc, Kurtoza_value))
 
 # Obliczanie procentowych odchyleń
@@ -283,9 +280,9 @@ Odch_std_pct <- (Odch_std / Srednia) * 100
 Odch_cwiartkowe_pct <- (IQR_value / Mediana) * 100
 Odchylenie_cwiartkowe <- IQR_value / 2
 
-# Wyświetl wyniki obliczeń
+# Wyniki obliczeń
 print(c(Odch_std_pct, Odch_cwiartkowe_pct, Odchylenie_cwiartkowe))
-# Stworzenie ramki danych z obliczonymi statystykami
+# Ramki danych z obliczonymi statystykami
 statystyki <- data.frame(
   Min = round(Min, 3),
   Max = round(Max, 3),
@@ -302,5 +299,21 @@ statystyki <- data.frame(
   "Odchylenie ćwiartkowe" = round(Odchylenie_cwiartkowe, 3)
 )
 
-# Wyświetlenie finalnej tabeli
+#Tabela
 print(statystyki)
+
+# Korelacja dla wszystkich zmiennych numerycznych w czynniki3
+correlations <- data.frame(cor(czynniki3))
+
+#Wyniki korelacji
+print(correlations)
+
+# Pakiet
+library(corrplot)
+
+# Macierz korelacji dla danych numerycznych
+cor_matrix <- cor(czynniki3, use = "complete.obs")
+
+# Wizualizacja macierzy korelacji
+corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
+         tl.col = "black", tl.srt = 45)
