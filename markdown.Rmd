@@ -216,22 +216,22 @@ statystyki <- data.frame(
   "Odchylenie ćwiartkowe" = round(Odchylenie_cwiartkowe, 3)
 )
 # Transponowanie tabeli statystyk
-statystyki_t <- t(statystyki)
+statystyki <- t(statystyki)
 
 # Konwertowanie tabeli na data.frame
-statystyki_t <- as.data.frame(statystyki_t)
+statystyki <- as.data.frame(statystyki)
 
 # Dodanie nazwy kolumny dla wartości
-colnames(statystyki_t) <- c("Wartości")
+colnames(statystyki) <- c("Wartości")
 
 # Przypisujemy statystyki do odpowiedniej kolumny
-statystyki_t$Statystyki <- rownames(statystyki_t)
+statystyki$Statystyki <- rownames(statystyki)
 
 # Zmieniamy kolejność kolumn
-statystyki_t <- statystyki_t[, c("Statystyki", "Wartości")]
+statystyki <- statystyki[, c("Statystyki", "Wartości")]
 
 # Wyświetlenie tabeli
-print(statystyki_t)
+print(statystyki)
 
 ```
 
