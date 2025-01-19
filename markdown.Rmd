@@ -1,30 +1,248 @@
----
-title: "Smieszna nazwa projektu"
-author: "Beniamin Gralak i Jakub Gużewski"
-date: "2025-01-19"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+#title:"Smieszna nazwa projektu"
+#author: "Beniamin Gralak i Jakub Gużewski"
+#date: "2025-01-19"
+#output: html_document
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+# 1. Wczytywanie danych i bibliotek
+x <- getURL('https://raw.githubusercontent.com/Guzioz/Smieszna-nazwa-projektu-Analiza/refs/heads/main/czynniki.csv')
+czynniki <- read.csv(text = x)
+library(RCurl)
+library(naniar)
+library(mice)
+install.packages("gridExtra")
+library(gridExtra)
+library(ggplot2)
+install.packages("corrplot")
+library(corrplot)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+# 2. Zapoznanie i czyszczenie danych
+## 2.1 Wstępne informacje i typ danych
+summary(czynniki)
+str(czynniki)
+LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki)))
+LICZBA_NA
+WARTOSCI_BEZ_NA <- data.frame(liczba_unikatowych_wartosci = sapply(czynniki, function(x) length(unique(na.omit(x)))))
+WARTOSCI_BEZ_NA
+typ_danych <- data.frame(typ = sapply(czynniki, class))
+typ_danych
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+## 2.2 Standaryzacja wartości i identyfikacja brakujących wartości
+czynniki2 <- subset(czynniki, !is.na(Exam_Score))
+LICZBA_NA2 <- data.frame(liczba_brakow = colSums(is.na(czynniki2)))
+LICZBA_NA2
+typ_danych <- data.frame(typ = sapply(czynniki, class))
+typ_danych
+columns_to_check <- c("Hours_Studied", "Attendance", "Parental_Involvement", "Access_to_Resources", 
+                      "Extracurricular_Activities", "Sleep_Hours", "Previous_Scores", 
+                      "Motivation_Level", "Internet_Access", "Tutoring_Sessions", "Family_Income", 
+                      "Teacher_Quality", "School_Type", "Peer_Influence", "Physical_Activity", 
+                      "Learning_Disabilities", "Parental_Education_Level", "Distance_from_Home", 
+                      "Gender", "Exam_Score")
+unique_values_all <- lapply(czynniki2[columns_to_check], unique)
+print(unique_values_all)
+data_cleaned <- subset(czynniki2, Exam_Score <= 100)
+czynniki2$Family_Income <- factor(czynniki2$Family_Income, levels = c("Low", "Medium", "High"))
+czynniki2$Teacher_Quality <- factor(czynniki2$Teacher_Quality, levels = c("Low", "Medium", "High"))
+czynniki2$Parental_Education_Level <- factor(czynniki2$Parental_Education_Level, levels = c("High School", "College", "Postgraduate"))
+czynniki2$Distance_from_Home <- factor(czynniki2$Distance_from_Home, levels = c("Near", "Moderate", "Far"))
+czynniki2$Motivation_Level <- factor(czynniki2$Motivation_Level, levels = c("Low", "Medium", "High"))
+czynniki2$Internet_Access <- factor(czynniki2$Internet_Access, levels = c("Yes", "No"))
+czynniki2$Learning_Disabilities <- factor(czynniki2$Learning_Disabilities, levels = c("No", "Yes"))
+czynniki2$School_Type <- factor(czynniki2$School_Type, levels = c("Public", "Private"))
+czynniki2$Extracurricular_Activities <- factor(czynniki2$Extracurricular_Activities, levels = c("No", "Yes"))
+czynniki2$Peer_Influence <- factor(czynniki2$Peer_Influence, levels = c("Positive", "Negative", "Neutral"))
+czynniki2$Gender <- factor(czynniki2$Gender, levels = c("Male", "Female"))
+```
+
+```{r}
+## 2.3 Czyszczenie brakujących wartości
+method <- make.method(czynniki2)
+method[c("Sleep_Hours", "Previous_Scores", "Tutoring_Sessions", "Physical_Activity", "Exam_Score")] <- "pmm"
+method[c("Internet_Access", "Gender", "Extracurricular_Activities")] <- "logreg"
+method[c("Family_Income", "Teacher_Quality", "Parental_Education_Level", "Distance_from_Home", 
+         "Motivation_Level", "Learning_Disabilities", "School_Type", "Peer_Influence")] <- "polyreg"
+print(method)
+czynnikisleep <- mice(czynniki2, m = 5, method = method, seed = 500)
+czynniki3 <- complete(czynnikisleep, 1)
+head(czynniki3)
+LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki3)))
+LICZBA_NA
+
+```
+
+```{r}
+# 3. Wizualizacja
+## 3.1 Wizualizacja zmiennej objaśnianej (Exam_Score)
+b1 <- ggplot(czynniki3, aes(y = Exam_Score)) +
+  geom_boxplot() +
+  labs(title = "Exam_Score")
+h1 <- ggplot(czynniki3) +
+  aes(x = Exam_Score) +
+  geom_histogram(bins = 30, fill = "#0c4c8a") +
+  theme_minimal()
+grid.arrange(b1, h1, nrow = 1)
+```
+
+```{r}
+## 3.2 Wykresy kołowe
+fill_colors <- c("0" = "blue", "1" = "lightblue")
+create_pie_chart <- function(data, var, fill_colors) {
+  ggplot(data, aes(x = "", fill = as.factor(data[[var]]))) +
+    geom_bar(width = 1, color = "white") +
+    coord_polar(theta = "y") +
+    scale_fill_manual(values = fill_colors) +
+    labs(title = paste("Pie Chart of", var), fill = "Categories") +
+    theme_void() +
+    theme(legend.position = "top")
+}
+pie_internet <- create_pie_chart(czynniki3, "Internet_Access", fill_colors)
+pie_learning_disabilities <- create_pie_chart(czynniki3, "Learning_Disabilities", fill_colors)
+pie_extracurricular_activities <- create_pie_chart(czynniki3, "Extracurricular_Activities", fill_colors)
+print(pie_internet)
+print(pie_learning_disabilities)
+print(pie_extracurricular_activities)
+```
+
+```{r}
+## 3.3 Wykresy słupkowe
+categorical_vars <- c("Family_Income", "Teacher_Quality", "Parental_Education_Level", 
+                      "Distance_from_Home", "Motivation_Level", "School_Type", 
+                      "Peer_Influence")
+gender_colors <- c("0" = "pink", "1" = "blue")
+gender_plot <- ggplot(czynniki3, aes(x = Gender, fill = as.factor(Gender))) +
+  geom_bar() +
+  scale_fill_manual(values = gender_colors) +
+  labs(title = "Bar Plot of Gender", x = "Gender", y = "Count") +
+  theme_minimal()
+print(gender_plot)
+for (var in categorical_vars) {
+  plot <- ggplot(czynniki3, aes_string(x = var, fill = as.factor(czynniki3[[var]]))) +
+    geom_bar() +
+    scale_fill_manual(values = rainbow(length(unique(czynniki3[[var]])))) +
+    labs(title = paste("Bar Plot of", var), x = var, y = "Count") +
+    theme_minimal()
+  print(plot)
+}
+```
+
+```{r}
+## 3.4 Wykresy pudełkowe
+for (i in seq_along(categorical_vars)) {
+  var <- categorical_vars[i]
+  plot <- ggplot(czynniki3, aes_string(x = var, y = "Exam_Score", fill = var)) +
+    geom_boxplot(color = "black") +
+    labs(title = paste("Boxplot of Exam_Score by", var), x = var, y = "Exam Score") +
+    scale_fill_manual(values = rainbow(length(unique(czynniki3[[var]])))) +
+    theme_minimal()
+  print(plot)
+}
+```
+
+```{r}
+## 3.5 Histogramy
+numeric_vars <- c("Hours_Studied", "Attendance", "Previous_Scores", "Sleep_Hours", 
+                  "Tutoring_Sessions", "Physical_Activity")
+for (var in numeric_vars) {
+  hist_plot <- ggplot(czynniki3, aes_string(x = var)) +
+    geom_histogram(bins = 30, fill = "#0c4c8a", color = "black") +
+    labs(title = paste("Histogram of", var), x = var, y = "Frequency") +
+    theme_minimal()
+  print(hist_plot)
+}
+```
+
+```{r}
+## 3.6 Scatter ploty
+for (var in numeric_vars) {
+  scatter_plot <- ggplot(czynniki3, aes_string(x = var, y = "Exam_Score")) +
+    geom_point(color = "#0c4c8a") +
+    labs(title = paste("Scatter Plot of Exam_Score vs", var), x = var, y = "Exam Score") +
+    theme_minimal()
+  print(scatter_plot)
+}
+```
+
+```{r}
+# 4. Statystyki
+## 4.1 Statystyki opisowe
+# Sprawdźmy dane wejściowe
+str(czynniki3$Exam_Score)  # Sprawdzenie struktury danych
+
+# Obliczanie poszczególnych statystyk (testowe bo inaczej nie działało)
+Min <- min(czynniki3$Exam_Score, na.rm = TRUE)
+Max <- max(czynniki3$Exam_Score, na.rm = TRUE)
+Kwartyl_dolny <- quantile(czynniki3$Exam_Score, 0.25, na.rm = TRUE)
+Mediana <- median(czynniki3$Exam_Score, na.rm = TRUE)
+Kwartyl_gorny <- quantile(czynniki3$Exam_Score, 0.75, na.rm = TRUE)
+Srednia <- mean(czynniki3$Exam_Score, na.rm = TRUE)
+Odch_std <- sd(czynniki3$Exam_Score, na.rm = TRUE)
+IQR_value <- IQR(czynniki3$Exam_Score, na.rm = TRUE)
+Skosnosc <- skewness(czynniki3$Exam_Score, na.rm = TRUE)
+Kurtoza_value <- kurtosis(czynniki3$Exam_Score, na.rm = TRUE)
+
+# Wyniki wstępne
+print(c(Min, Max, Kwartyl_dolny, Mediana, Kwartyl_gorny, Srednia, Odch_std, IQR_value, Skosnosc, Kurtoza_value))
+
+# Obliczanie procentowych odchyleń
+Odch_std_pct <- (Odch_std / Srednia) * 100
+Odch_cwiartkowe_pct <- (IQR_value / Mediana) * 100
+Odchylenie_cwiartkowe <- IQR_value / 2
+
+# Wyniki obliczeń
+print(c(Odch_std_pct, Odch_cwiartkowe_pct, Odchylenie_cwiartkowe))
+
+# Ramki danych z obliczonymi statystykami
+statystyki <- data.frame(
+  Min = round(Min, 3),
+  Max = round(Max, 3),
+  "Kwartyl dolny" = round(Kwartyl_dolny, 3),
+  Mediana = round(Mediana, 3),
+  "Kwartyl górny" = round(Kwartyl_gorny, 3),
+  Średnia = round(Srednia, 3),
+  "Odch. std." = round(Odch_std, 3),
+  IQR = round(IQR_value, 3),
+  "Skośność" = round(Skosnosc, 3),
+  "Kurtoza" = round(Kurtoza_value, 3),
+  "Odch. std. w %" = round(Odch_std_pct, 3),
+  "Odch. ćwiartkowe w %" = round(Odch_cwiartkowe_pct, 3),
+  "Odchylenie ćwiartkowe" = round(Odchylenie_cwiartkowe, 3)
+)
+
+# Tabela
+print(statystyki)
+```
+
+```{r}
+## 4.2 Korelacje
+czynniki_kor <- czynniki3
+czynniki_kor$Parental_Involvement <- as.numeric(factor(czynniki_kor$Parental_Involvement, levels = c("Low", "Medium", "High"), labels = c(1, 2, 3)))
+czynniki_kor$Access_to_Resources <- as.numeric(factor(czynniki_kor$Access_to_Resources, levels = c("High", "Medium", "Low"), labels = c(1, 2, 3)))
+czynniki_kor$Extracurricular_Activities <- ifelse(czynniki_kor$Extracurricular_Activities == "Yes", 1, 0)
+czynniki_kor$Motivation_Level <- as.numeric(factor(czynniki_kor$Motivation_Level, levels = c("Low", "Medium", "High"), labels = c(1, 2, 3)))
+czynniki_kor$Internet_Access <- ifelse(czynniki_kor$Internet_Access == "Yes", 1, 0)
+czynniki_kor$Family_Income <- as.numeric(factor(czynniki_kor$Family_Income, levels = c("Low", "Medium", "High"), labels = c(1, 2, 3)))
+czynniki_kor$Teacher_Quality <- as.numeric(factor(czynniki_kor$Teacher_Quality, levels = c("Low", "Medium", "High"), labels = c(1, 2, 3)))
+czynniki_kor$Distance_from_Home <- ifelse(czynniki_kor$Distance_from_Home == "Near", 0,
+                                          ifelse(czynniki_kor$Distance_from_Home == "Moderate", 1,
+                                                 ifelse(czynniki_kor$Distance_from_Home == "Far", 2, NA)))
+czynniki_kor$Parental_Education_Level <- ifelse(czynniki_kor$Parental_Education_Level == "High School", 0,
+                                                ifelse(czynniki_kor$Parental_Education_Level == "College", 1,
+                                                       ifelse(czynniki_kor$Parental_Education_Level == "Postgraduate", 2, NA)))
+czynniki_kor$Learning_Disabilities <- ifelse(czynniki_kor$Learning_Disabilities == "Yes", 1, 0)
+czynniki_kor$Peer_Influence <- ifelse(czynniki_kor$Peer_Influence == "Negative", 0,
+                                      ifelse(czynniki_kor$Peer_Influence == "Neutral", 1,
+                                             ifelse(czynniki_kor$Peer_Influence == "Positive", 2, NA)))
+czynniki_kor$Gender <- ifelse(czynniki_kor$Gender == "Male", 1, 0)
+czynniki_kor$School_Type <- ifelse(czynniki_kor$School_Type == "Public", 0,
+                                   ifelse(czynniki_kor$School_Type == "Private", 1, NA))
+cor_matrix <- cor(czynniki_kor, use = "complete.obs")
+corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
+         tl.col = "black", tl.srt = 45)
+```
