@@ -85,54 +85,6 @@ head(czynniki3)
 LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki3)))
 LICZBA_NA
 
-#Standaryzowanie danych
-
-czynniki3$Parental_Involvement <- as.numeric(factor(
-  czynniki3$Parental_Involvement,
-  levels = c("Low", "Medium", "High"),
-  labels = c(1, 2, 3)
-))
-czynniki3$Access_to_Resources <- as.numeric(factor(
-  czynniki3$Access_to_Resources,
-  levels = c("High", "Medium", "Low"),
-  labels = c(1, 2, 3)
-))
-czynniki3$Extracurricular_Activities <- ifelse(
-  czynniki3$Extracurricular_Activities == "Yes", 1, 0
-)
-czynniki3$Motivation_Level <- as.numeric(factor(
-  czynniki3$Motivation_Level,
-  levels = c("Low", "Medium", "High"),
-  labels = c(1, 2, 3)
-))
-czynniki3$Internet_Access <- ifelse(
-  czynniki3$Internet_Access == "Yes", 1, 0
-)
-czynniki3$Family_Income <- as.numeric(factor(
-  czynniki3$Family_Income,
-  levels = c("Low", "Medium", "High"),
-  labels = c(1, 2, 3)
-))
-czynniki3$Teacher_Quality <- as.numeric(factor(
-  czynniki3$Teacher_Quality,
-  levels = c("Low", "Medium", "High"),
-  labels = c(1, 2, 3)
-))
-czynniki3$Distance_from_Home <- ifelse(czynniki3$Distance_from_Home == "Near", 0,
-                                       ifelse(czynniki3$Distance_from_Home == "Moderate", 1,
-                                              ifelse(czynniki3$Distance_from_Home == "Far", 2, NA)))
-czynniki3$Parental_Education_Level <- ifelse(czynniki3$Parental_Education_Level == "High School", 0,
-                                             ifelse(czynniki3$Parental_Education_Level == "College", 1,
-                                                    ifelse(czynniki3$Parental_Education_Level == "Postgraduate", 2, NA)))
-czynniki3$Learning_Disabilities <- ifelse(czynniki3$Learning_Disabilities == "Yes", 1, 0)
-
-czynniki3$Peer_Influence <- ifelse(czynniki3$Peer_Influence == "Negative", 0,
-                                   ifelse(czynniki3$Peer_Influence == "Neutral", 1,
-                                          ifelse(czynniki3$Peer_Influence == "Positive", 2, NA)))
-czynniki3$Gender <- ifelse(czynniki3$Gender == "Male", 1, 0)
-
-czynniki3$School_Type <- ifelse(czynniki3$School_Type == "Public", 0,
-                                ifelse(czynniki3$School_Type == "Private", 1, NA))
 # Zainstaluj pakiet gridExtra, jeśli jeszcze go nie masz
 install.packages("gridExtra")
 
@@ -302,8 +254,57 @@ statystyki <- data.frame(
 #Tabela
 print(statystyki)
 
+czynniki_kor <- czynniki3
+#Standaryzowanie danych
+czynniki_kor$Parental_Involvement <- as.numeric(factor(
+  czynniki_kor$Parental_Involvement,
+  levels = c("Low", "Medium", "High"),
+  labels = c(1, 2, 3)
+))
+czynniki_kor$Access_to_Resources <- as.numeric(factor(
+  czynniki_kor$Access_to_Resources,
+  levels = c("High", "Medium", "Low"),
+  labels = c(1, 2, 3)
+))
+czynniki_kor$Extracurricular_Activities <- ifelse(
+  czynniki_kor$Extracurricular_Activities == "Yes", 1, 0
+)
+czynniki_kor$Motivation_Level <- as.numeric(factor(
+  czynniki_kor$Motivation_Level,
+  levels = c("Low", "Medium", "High"),
+  labels = c(1, 2, 3)
+))
+czynniki_kor$Internet_Access <- ifelse(
+  czynniki_kor$Internet_Access == "Yes", 1, 0
+)
+czynniki_kor$Family_Income <- as.numeric(factor(
+  czynniki_kor$Family_Income,
+  levels = c("Low", "Medium", "High"),
+  labels = c(1, 2, 3)
+))
+czynniki_kor$Teacher_Quality <- as.numeric(factor(
+  czynniki_kor$Teacher_Quality,
+  levels = c("Low", "Medium", "High"),
+  labels = c(1, 2, 3)
+))
+czynniki_kor$Distance_from_Home <- ifelse(czynniki_kor$Distance_from_Home == "Near", 0,
+                                          ifelse(czynniki_kor$Distance_from_Home == "Moderate", 1,
+                                                 ifelse(czynniki_kor$Distance_from_Home == "Far", 2, NA)))
+czynniki_kor$Parental_Education_Level <- ifelse(czynniki_kor$Parental_Education_Level == "High School", 0,
+                                                ifelse(czynniki_kor$Parental_Education_Level == "College", 1,
+                                                       ifelse(czynniki_kor$Parental_Education_Level == "Postgraduate", 2, NA)))
+czynniki_kor$Learning_Disabilities <- ifelse(czynniki_kor$Learning_Disabilities == "Yes", 1, 0)
+
+czynniki_kor$Peer_Influence <- ifelse(czynniki_kor$Peer_Influence == "Negative", 0,
+                                      ifelse(czynniki_kor$Peer_Influence == "Neutral", 1,
+                                             ifelse(czynniki_kor$Peer_Influence == "Positive", 2, NA)))
+czynniki_kor$Gender <- ifelse(czynniki_kor$Gender == "Male", 1, 0)
+
+czynniki_kor$School_Type <- ifelse(czynniki_kor$School_Type == "Public", 0,
+                                   ifelse(czynniki_kor$School_Type == "Private", 1, NA))
+
 # Korelacja dla wszystkich zmiennych numerycznych w czynniki3
-correlations <- data.frame(cor(czynniki3))
+correlations <- data.frame(cor(czynniki_kor))
 
 #Wyniki korelacji
 print(correlations)
@@ -312,7 +313,7 @@ print(correlations)
 library(corrplot)
 
 # Macierz korelacji dla danych numerycznych
-cor_matrix <- cor(czynniki3, use = "complete.obs")
+cor_matrix <- cor(czynniki_kor, use = "complete.obs")
 
 # Wizualizacja macierzy korelacji
 corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
