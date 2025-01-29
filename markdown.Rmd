@@ -4,9 +4,11 @@
 #date: "2025-01-19"
 #output: html_document
 ```
-##import danych i bibliotek
-Wczytujemy dane z zewnętrznego źródła oraz potrzebne biblioteki do analizy i wizualizacji danych.
 ```{r}
+#import danych i bibliotek
+#Wczytujemy dane z zewnętrznego źródła oraz potrzebne biblioteki do analizy i wizualizacji danych.
+
+
 # 1. Wczytywanie danych i bibliotek
 library(RCurl)
 x <- getURL('https://raw.githubusercontent.com/Guzioz/Smieszna-nazwa-projektu-Analiza/refs/heads/main/czynniki.csv')
@@ -20,9 +22,11 @@ install.packages("corrplot")
 library(corrplot)
 library(moments)
 ```
-## Data wrangling
-Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, np. brakujące dane.Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, np. brakujące dane.
 ```{r}
+# Data wrangling
+#Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, np. brakujące dane.Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, np. brakujące dane.
+
+
 # 2. Zapoznanie i czyszczenie danych
 ## 2.1 Wstępne informacje i typ danych
 summary(czynniki)
@@ -31,12 +35,11 @@ LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki)))
 LICZBA_NA
 WARTOSCI_BEZ_NA <- data.frame(liczba_unikatowych_wartosci = sapply(czynniki, function(x) length(unique(na.omit(x)))))
 WARTOSCI_BEZ_NA
-typ_danych <- data.frame(typ = sapply(czynniki, class))
-typ_danych
 ```
-##Czyszczenie danych
-Usuwamy obserwacje z brakującymi wynikami egzaminu (Exam_Score) oraz standaryzuję format danych, np. zmienne kategoryczne zamieniamy na faktory.
 ```{r}
+##Czyszczenie danych
+#Usuwamy obserwacje z brakującymi wynikami egzaminu (Exam_Score) oraz standaryzuję format danych, np. zmienne kategoryczne zamieniamy na faktory.
+
 ## 2.2 Standaryzacja wartości i identyfikacja brakujących wartości
 czynniki2 <- subset(czynniki, !is.na(Exam_Score))
 LICZBA_NA2 <- data.frame(liczba_brakow = colSums(is.na(czynniki2)))
@@ -64,10 +67,11 @@ czynniki2$Extracurricular_Activities <- factor(czynniki2$Extracurricular_Activit
 czynniki2$Peer_Influence <- factor(czynniki2$Peer_Influence, levels = c("Positive", "Negative", "Neutral"))
 czynniki2$Gender <- factor(czynniki2$Gender, levels = c("Male", "Female"))
 ```
-Wypełniamy brakujące wartości metodą wielokrotnego imputacji (mice).
-
 ```{r}
-## 2.3 Czyszczenie brakujących wartości
+#Wypełniamy brakujące wartości metodą wielokrotnego imputacji (mice).
+
+
+# 2.3 Czyszczenie brakujących wartości
 method <- make.method(czynniki2)
 method[c("Sleep_Hours", "Previous_Scores", "Tutoring_Sessions", "Physical_Activity", "Exam_Score")] <- "pmm"
 method[c("Internet_Access", "Gender", "Extracurricular_Activities")] <- "logreg"
@@ -81,13 +85,13 @@ LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki3)))
 LICZBA_NA
 
 ```
-## ggplot2 plots
-
-Tworzymy wykresy pudełkowe (boxplot) oraz histogramy dla zmiennej wynikowej (Exam_Score).Z wykorzystaniem pakietów ***ggplot2*
 
 ```{r}
+#Tworzymy wykresy pudełkowe (boxplot) oraz histogramy dla zmiennej wynikowej (Exam_Score).Z wykorzystaniem pakietów ***ggplot2*
+
+
 # 3. Wizualizacja
-## 3.1 Wizualizacja zmiennej objaśnianej (Exam_Score)
+# 3.1 Wizualizacja zmiennej objaśnianej (Exam_Score)
 b1 <- ggplot(czynniki3, aes(y = Exam_Score)) +
   geom_boxplot() +
   labs(title = "Exam_Score")
@@ -97,9 +101,11 @@ h1 <- ggplot(czynniki3) +
   theme_minimal()
 grid.arrange(b1, h1, nrow = 1)
 ```
-##Wykresy kołowe
-Tworzymy wykresy kołowe dla zmiennych kategorycznych, takich jak dostęp do Internetu czy aktywności dodatkowe, aby zobaczyć proporcje poszczególnych kategorii i łatwiej zinterpretować dane.
+
 ```{r}
+#Wykresy kołowe
+#Tworzymy wykresy kołowe dla zmiennych kategorycznych, takich jak dostęp do Internetu czy aktywności dodatkowe, aby zobaczyć proporcje poszczególnych kategorii i łatwiej zinterpretować dane.
+
 ## 3.2 Wykresy kołowe
 fill_colors <- c("0" = "blue", "1" = "lightblue")
 create_pie_chart <- function(data, var, fill_colors) {
@@ -118,9 +124,11 @@ print(pie_internet)
 print(pie_learning_disabilities)
 print(pie_extracurricular_activities)
 ```
-##Wykresy słupkowe
-Tworzymy wykresy słupkowe dla zmiennych kategorycznych, takich jak płeć czy poziom dochodów, aby porównać liczebność grup i zauważyć ewentualne nierówności
+
 ```{r}
+##Wykresy słupkowe
+#Tworzymy wykresy słupkowe dla zmiennych kategorycznych, takich jak płeć czy poziom dochodów, aby porównać liczebność grup i zauważyć ewentualne nierówności
+
 ## 3.3 Wykresy słupkowe
 categorical_vars <- c("Family_Income", "Teacher_Quality", "Parental_Education_Level", 
                       "Distance_from_Home", "Motivation_Level", "School_Type", 
@@ -141,10 +149,12 @@ for (var in categorical_vars) {
   print(plot)
 }
 ```
-##Wykresy pudełkowe
-Tworzymy wykresy pudełkowe, by zobaczyć, jak różne czynniki (np. typ szkoły, poziom motywacji) wpływają na wyniki egzaminów.
 
 ```{r}
+##Wykresy pudełkowe
+#Tworzymy wykresy pudełkowe, by zobaczyć, jak różne czynniki (np. typ szkoły, poziom motywacji) wpływają na wyniki egzaminów.
+
+
 ## 3.4 Wykresy pudełkowe
 for (i in seq_along(categorical_vars)) {
   var <- categorical_vars[i]
@@ -156,9 +166,11 @@ for (i in seq_along(categorical_vars)) {
   print(plot)
 }
 ```
-##Histogramy
-Tworzymy histogramy dla zmiennych liczbowych (np. godziny nauki, liczba sesji korepetycji), aby zrozumieć rozkład każdej zmiennej i zauważyć ewentualne skupienia lub wartości odstające.
+
 ```{r}
+##Histogramy
+#Tworzymy histogramy dla zmiennych liczbowych (np. godziny nauki, liczba sesji korepetycji), aby zrozumieć rozkład każdej zmiennej i zauważyć ewentualne skupienia lub wartości odstające.
+
 ## 3.5 Histogramy
 numeric_vars <- c("Hours_Studied", "Attendance", "Previous_Scores", "Sleep_Hours", 
                   "Tutoring_Sessions", "Physical_Activity")
@@ -170,10 +182,11 @@ for (var in numeric_vars) {
   print(hist_plot)
 }
 ```
-##Wykresy punktowe
-Tworzę wykresy punktowe (scatter plots) dla zmiennych liczbowych w odniesieniu do wyniku egzaminu.
 ```{r}
-## 3.6 Scatter ploty
+#Wykresy punktowe
+#Tworzę wykresy punktowe (scatter plots) dla zmiennych liczbowych w odniesieniu do wyniku egzaminu.
+
+# 3.6 Scatter ploty
 for (var in numeric_vars) {
   scatter_plot <- ggplot(czynniki3, aes_string(x = var, y = "Exam_Score")) +
     geom_point(color = "#0c4c8a") +
@@ -182,9 +195,11 @@ for (var in numeric_vars) {
   print(scatter_plot)
 }
 ```
-##Statystyki Opisowe
-Obliczamy podstawowe statystyki, takie jak minimum, maksimum, mediana, kwartyle, średnia i odchylenie standardowe.
+
 ```{r}
+#Statystyki Opisowe
+#Obliczamy podstawowe statystyki, takie jak minimum, maksimum, mediana, kwartyle, średnia i odchylenie standardowe.
+
 # 4. Statystyki
 ## 4.1 Statystyki opisowe
 # Sprawdźmy dane wejściowe
@@ -248,9 +263,11 @@ statystyki <- statystyki[, c("Statystyki", "Wartości")]
 print(statystyki)
 
 ```
-##Korelacja
-Tworzymy macierz korelacji, by zbadać, jak różne czynniki są ze sobą powiązane, aby zidentyfikować silne korelacje, które mogą wskazywać na potencjalne przyczyny wysokich lub niskich wyników egzaminów.
+
 ```{r}
+#Korelacja
+#Tworzymy macierz korelacji, by zbadać, jak różne czynniki są ze sobą powiązane, aby zidentyfikować silne korelacje, które mogą wskazywać na potencjalne przyczyny wysokich lub niskich wyników egzaminów.
+
 ## 4.2 Korelacje
 czynniki_kor <- czynniki3
 czynniki_kor$Parental_Involvement <- as.numeric(factor(czynniki_kor$Parental_Involvement, levels = c("Low", "Medium", "High"), labels = c(1, 2, 3)))
