@@ -317,4 +317,85 @@ cor_matrix <- cor(czynniki_kor, use = "complete.obs")
 
 # Wizualizacja macierzy korelacji
 corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
-         tl.col = "black", tl.srt = 45)
+         tl.col = "black", tl.srt = 45)        
+
+install.packages("ggstatsplot")
+library(ggstatsplot)
+
+# 5. Wykresy korelacyjne ggscatterstats
+
+# Korelacja Exam_Score vs Hours_Studied
+ggscatterstats(
+  data = czynniki3,
+  x = Hours_Studied,
+  y = Exam_Score,
+  title = "Korelacja: Wynik egzaminu a liczba godzin nauki",
+  xlab = "Liczba godzin nauki",
+  ylab = "Wynik egzaminu",
+  ggtheme = ggplot2::theme_minimal()
+)
+
+# Korelacja Exam_Score vs Previous_Scores
+ggscatterstats(
+  data = czynniki3,
+  x = Previous_Scores,
+  y = Exam_Score,
+  title = "Korelacja: Wynik egzaminu a wcześniejsze wyniki",
+  xlab = "Poprzednie wyniki",
+  ylab = "Wynik egzaminu",
+  ggtheme = ggplot2::theme_minimal()
+)
+#Tworzymy model regresji liniowej z Physical_Activity i Sleep_Hours jako zmiennymi objaśniającymi
+model1 <- lm(Exam_Score ~ Physical_Activity + Sleep_Hours, data = czynniki3)
+
+plot1 <- ggcoefstats(
+  model1,
+  title = "Wpływ aktywności fizycznej i snu na wynik egzaminu",
+  xlab = "Współczynniki regresji",
+  ggtheme = ggplot2::theme_minimal()
+)
+
+# Rysowanie wykresu
+print(plot1)
+
+ggscatterstats(
+  data = data,
+  x = Attendance,
+  y = Exam_Score,
+  title = "Korelacja: Wynik egzaminu a frekwencja",
+  xlab = "Frekwencja (%)",
+  ylab = "Wynik egzaminu",
+  ggtheme = ggplot2::theme_minimal()
+)
+
+
+ggbetweenstats(
+  data = czynniki3,
+  x = Gender,
+  y = Exam_Score,
+  title = "Porównanie wyników egzaminu wg płci",
+  xlab = "Płeć",
+  ylab = "Wynik egzaminu",
+  ggtheme = ggplot2::theme_minimal()
+)
+
+ggbetweenstats(
+  data = czynniki3,
+  x = Access_to_Resources,
+  y = Exam_Score,
+  title = "Porównanie wyników egzaminu wg dostępu do zasobów edukacyjnych",
+  xlab = "Zasoby edukacyjne",
+  ylab = "Wynik egzaminu",
+  ggtheme = ggplot2::theme_minimal()
+)
+
+ggbetweenstats(
+  data = czynniki3,
+  x = Parental_Involvement,
+  y = Exam_Score,
+  title = "Porównanie wyników egzaminu wg poziomu zaagnażowania rodziców",
+  xlab = "Poziom zaangażowania rodziców",
+  ylab = "Wynik egzaminu",
+  ggtheme = ggplot2::theme_minimal()
+)
+
