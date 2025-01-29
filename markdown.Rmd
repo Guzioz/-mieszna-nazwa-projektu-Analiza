@@ -4,6 +4,7 @@
 #date: "2025-01-19"
 #output: html_document
 ```
+
 ```{r}
 #import danych i bibliotek
 #Wczytujemy dane z zewnętrznego źródła oraz potrzebne biblioteki do analizy i wizualizacji danych.
@@ -22,10 +23,27 @@ install.packages("corrplot")
 library(corrplot)
 library(moments)
 ```
+
+```{r}
+#PROBLEM
+#Celem naszego projektu jest przeprowadzenie szczegółowej analizy wpływu różnych czynników na wyniki egzaminacyjne uczniów. Badanie opiera się na danych obejmujących szereg zmiennych, które mogą mieć istotne znaczenie dla osiąganych rezultatów. W szczególności skupiamy się na analizie zależności między wynikami egzaminów a takimi czynnikami jak liczba godzin snu, czas poświęcony na naukę, płeć ucznia oraz odległość z domu do szkoły itp.
+
+# Dane zawierają następujące kolumny:
+# - Exam_Score: wynik końcowy ucznia
+# - Hours_Studied: liczba godzin poświęconych na naukę
+# - Sleep_Hours: liczba godzin snu na dobę
+# - Parental_Involvement: poziom zaangażowania rodziców (Low/Medium/High)
+# - Access_to_Resources: dostęp do materiałów edukacyjnych
+# - Peer_Influence: wpływ rówieśników (Positive/Negative/Neutral)
+# - Motivation_Level: poziom motywacji ucznia (Low/Medium/High)
+# - School_Type: typ szkoły (Public/Private)
+# - Learning_Disabilities: informacja, czy uczeń ma trudności w nauce
+# - Family_Income: status dochodowy rodziny (Low/Medium/High)
+```
+
 ```{r}
 # Data wrangling
-#Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, np. brakujące dane.Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, np. brakujące dane.
-
+#Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, np. brakujące dane.
 
 # 2. Zapoznanie i czyszczenie danych
 ## 2.1 Wstępne informacje i typ danych
@@ -36,6 +54,7 @@ LICZBA_NA
 WARTOSCI_BEZ_NA <- data.frame(liczba_unikatowych_wartosci = sapply(czynniki, function(x) length(unique(na.omit(x)))))
 WARTOSCI_BEZ_NA
 ```
+
 ```{r}
 ##Czyszczenie danych
 #Usuwamy obserwacje z brakującymi wynikami egzaminu (Exam_Score) oraz standaryzuję format danych, np. zmienne kategoryczne zamieniamy na faktory.
@@ -67,6 +86,7 @@ czynniki2$Extracurricular_Activities <- factor(czynniki2$Extracurricular_Activit
 czynniki2$Peer_Influence <- factor(czynniki2$Peer_Influence, levels = c("Positive", "Negative", "Neutral"))
 czynniki2$Gender <- factor(czynniki2$Gender, levels = c("Male", "Female"))
 ```
+
 ```{r}
 #Wypełniamy brakujące wartości metodą wielokrotnego imputacji (mice).
 
@@ -182,6 +202,7 @@ for (var in numeric_vars) {
   print(hist_plot)
 }
 ```
+
 ```{r}
 #Wykresy punktowe
 #Tworzę wykresy punktowe (scatter plots) dla zmiennych liczbowych w odniesieniu do wyniku egzaminu.
