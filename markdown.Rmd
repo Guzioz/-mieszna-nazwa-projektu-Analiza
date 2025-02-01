@@ -31,34 +31,30 @@ Celem naszego projektu jest przeprowadzenie szczegółowej analizy wpływu róż
 
 ### Dane zawierają następujące kolumny:
 
-\- Exam_Score: wynik końcowy ucznia
+\- Exam_Score: wynik egzaminu końcowego
 
-\- Hours_Studied: liczba godzin poświęconych na naukę
+\- Hours_Studied: liczba godzin nauki w tygodniu
 
-\- Sleep_Hours: liczba godzin snu na dobę
+\- Sleep_Hours: średnia liczba godzin snu w ciągu nocy
 
-\- Parental_Involvement: poziom zaangażowania rodziców (Low/Medium/High)
+\- Parental_Involvement: Poziom zaangażowania rodziców w edukację ucznia (Low/Medium/High)
 
-\- Access_to_Resources: dostęp do materiałów edukacyjnych
+\- Access_to_Resources: Dostępność zasobów edukacyjnych (niska, średnia, wysoka)
 
-\- Peer_Influence: wpływ rówieśników (Positive/Negative/Neutral)
+\- Peer_Influence: Wpływ rówieśników na wyniki w nauce (Positive/Negative/Neutral)
 
-\- Motivation_Level: poziom motywacji ucznia (Low/Medium/High)
+\- Motivation_Level: Poziom motywacji ucznia (Low/Medium/High)
 
-\- School_Type: typ szkoły (Public/Private)
+\- School_Type: Rodzaj szkoły, do której uczęszcza uczeń (Public/Private)
 
-\- Learning_Disabilities: informacja, czy uczeń ma trudności w nauce
+\- Learning_Disabilities: Obecność trudności w uczeniu się (Yes/No)
 
-\- Family_Income: status dochodowy rodziny (Low/Medium/High)
-
-# Data wrangling
-
-~Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, np. brakujące dane.~
+\- Family_Income: Poziom dochodów rodziny (Low/Medium/High)
 
 ## 2. Zapoznanie i czyszczenie danych
 
 ### 2.1 Wstępne informacje i typ danych
-
+Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, jak na przykład brakujące zmienne.
 ```{r}
 summary(czynniki)
 ```
@@ -66,26 +62,20 @@ summary(czynniki)
 ```{r}
 str(czynniki)
 ```
-
+Poniżej przedstawiliśmy brakujące wartości jakie pojawiły się w bazie danych. 
 ```{r}
 LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki)))
 LICZBA_NA
 ```
-
+Poniżej przedstawiliśmy ilości unikatowych wartości dla każdej zmiennej. 
 ```{r}
 WARTOSCI_BEZ_NA <- data.frame(liczba_unikatowych_wartosci = sapply(czynniki, function(x) length(unique(na.omit(x)))))
 WARTOSCI_BEZ_NA
 ```
 
-### 2.2 Standaryzacja wartości i identyfikacja brakujących wartości
+### 2.2 Standaryzacja wartości
 
-Wyszukujemy brakujące wartości, dodatkowo standaryzujmy format danych, np. zmienne kategoryczne zamieniamy na faktory.
-
-```{r}
-czynniki2 <- subset(czynniki, !is.na(Exam_Score))
-LICZBA_NA2 <- data.frame(liczba_brakow = colSums(is.na(czynniki2)))
-LICZBA_NA2
-```
+Wyświetlamy posiadane wartości, oraz standaryzujemy. Robimy ograniczenia, chociażby dla wyników, które nie powinny przekraczać 100. Dodatkowo przypisujemy zmienne kategoryczne do faktorów, w celu przeprowadzenia dalszej analizy.
 
 ```{r}
 typ_danych <- data.frame(typ = sapply(czynniki, class))
@@ -99,24 +89,30 @@ columns_to_check <- c("Hours_Studied", "Attendance", "Parental_Involvement", "Ac
                       "Teacher_Quality", "School_Type", "Peer_Influence", "Physical_Activity", 
                       "Learning_Disabilities", "Parental_Education_Level", "Distance_from_Home", 
                       "Gender", "Exam_Score")
-unique_values_all <- lapply(czynniki2[columns_to_check], unique)
+unique_values_all <- lapply(czynniki[columns_to_check], unique)
 print(unique_values_all)
-data_cleaned <- subset(czynniki2, Exam_Score <= 100)
-czynniki2$Family_Income <- factor(czynniki2$Family_Income, levels = c("Low", "Medium", "High"))
-czynniki2$Teacher_Quality <- factor(czynniki2$Teacher_Quality, levels = c("Low", "Medium", "High"))
-czynniki2$Parental_Education_Level <- factor(czynniki2$Parental_Education_Level, levels = c("High School", "College", "Postgraduate"))
-czynniki2$Distance_from_Home <- factor(czynniki2$Distance_from_Home, levels = c("Near", "Moderate", "Far"))
-czynniki2$Motivation_Level <- factor(czynniki2$Motivation_Level, levels = c("Low", "Medium", "High"))
-czynniki2$Internet_Access <- factor(czynniki2$Internet_Access, levels = c("Yes", "No"))
-czynniki2$Learning_Disabilities <- factor(czynniki2$Learning_Disabilities, levels = c("No", "Yes"))
-czynniki2$School_Type <- factor(czynniki2$School_Type, levels = c("Public", "Private"))
-czynniki2$Extracurricular_Activities <- factor(czynniki2$Extracurricular_Activities, levels = c("No", "Yes"))
-czynniki2$Peer_Influence <- factor(czynniki2$Peer_Influence, levels = c("Positive", "Negative", "Neutral"))
-czynniki2$Gender <- factor(czynniki2$Gender, levels = c("Male", "Female"))
+data_cleaned <- subset(czynniki, Exam_Score <= 100)
+czynniki$Family_Income <- factor(czynniki$Family_Income, levels = c("Low", "Medium", "High"))
+czynniki$Teacher_Quality <- factor(czynniki$Teacher_Quality, levels = c("Low", "Medium", "High"))
+czynniki$Parental_Education_Level <- factor(czynniki$Parental_Education_Level, levels = c("High School", "College", "Postgraduate"))
+czynniki$Distance_from_Home <- factor(czynniki$Distance_from_Home, levels = c("Near", "Moderate", "Far"))
+czynniki$Motivation_Level <- factor(czynniki$Motivation_Level, levels = c("Low", "Medium", "High"))
+czynniki$Internet_Access <- factor(czynniki$Internet_Access, levels = c("Yes", "No"))
+czynniki$Learning_Disabilities <- factor(czynniki$Learning_Disabilities, levels = c("No", "Yes"))
+czynniki$School_Type <- factor(czynniki$School_Type, levels = c("Public", "Private"))
+czynniki$Extracurricular_Activities <- factor(czynniki$Extracurricular_Activities, levels = c("No", "Yes"))
+czynniki$Peer_Influence <- factor(czynniki$Peer_Influence, levels = c("Positive", "Negative", "Neutral"))
+czynniki$Gender <- factor(czynniki$Gender, levels = c("Male", "Female"))
 ```
 
 ### 2.3 Czyszczenie brakujących wartości
-
+Początkowo usuwamy brakujące wartości wyników egzaminu, ze względu na to, że jest to zmienna badana. W celu ograniczenia ryzyka, uważamy, że jest to ważne dla dalszej analizy
+```{r}
+czynniki2 <- subset(czynniki, !is.na(Exam_Score))
+LICZBA_NA2 <- data.frame(liczba_brakow = colSums(is.na(czynniki2)))
+LICZBA_NA2
+```
+Reszte zmiennych postanawiamy zastąpić przy użyciu metody mice. Która będzie najlepsza wobec zastąpywania brakujących wartości dla naszych danych
 ```{r}
 method <- make.method(czynniki2)
 method[c("Sleep_Hours", "Previous_Scores", "Tutoring_Sessions", "Physical_Activity", "Exam_Score")] <- "pmm"
@@ -129,13 +125,8 @@ print(method)
 ```{r}
 czynnikisleep <- mice(czynniki2, m = 5, method = method, seed = 500)
 czynniki3 <- complete(czynnikisleep, 1)
-head(czynniki3)
-```
-
-```{r}
 LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki3)))
 LICZBA_NA
-
 ```
 
 ## 3. Wizualizacja
@@ -178,6 +169,9 @@ pie_learning_disabilities <- create_pie_chart(czynniki3, "Learning_Disabilities"
 print(pie_internet)
 print(pie_learning_disabilities)
 ```
+Powyższy wykres przedstawiający procentowy dostęp uczniów do internetu, ukazuje, że tylko 8% uczniów nie ma dostępu do internetu.
+
+Kolejny wykres kołowy, ukazuje, że aż 11% uczniów ma pewne trudności w nauce, co może sugerować obecność pewnych dysfunkcji wśród uczniów
 
 ### 3.3 Wykresy słupkowe
 
@@ -224,7 +218,7 @@ Ostatni wykres ukazuje wpływ rówieśników na ucznia, ciekawym faktem może by
 
 ### 3.4 Wykresy pudełkowe
 
-Tworzymy wykresy pudełkowe, by zobaczyć, jak różne czynniki (np. typ szkoły, poziom motywacji) wpływają na wyniki egzaminów.
+Tworzymy wykresy pudełkowe, by zobaczyć, jak jakość nauczycieli, poziom wyedukowania rodziców, poziom motywacji, czy typ szkoły wpływają na wyniki egzaminów.
 
 ```{r}
 categorical_vars <- c("Teacher_Quality", "Parental_Education_Level", "Motivation_Level", "School_Type")
@@ -238,6 +232,13 @@ for (i in seq_along(categorical_vars)) {
   print(plot)
 }
 ```
+Na podstawie wykresu jakości nauczycieli, a wyniku egzaminu, możemy zauważyć lekką asymetryczność, dla wyników low, oraz high. Uczniowie, mający nauczycieli, których ocenili na wysoką jakość, mieli szanse na osiągnięcie lepszych wyników, niż Ci z na przykład niską jakościa. Możemy dodatkowo zauważyć, że nauczyciele ocenieni na jakość średnią, mieli najwięcej odstający wyników.
+
+Na podstawie wykresu poziom wykształcenia rodziców, a wyniku egzaminu, możemy zauważyć, że im wyższe wykształcenie rodziców, tym wyniki osiągane przez uczniów były większe. Z drugiej strony możemy zauważyć asymetryczność dla rodziców z wykształceniem wyższym. Najwięcej odstających wartośći jest dla wyników uczniów, których rodzice mają wykształcene policealne.
+
+Na podstawie wykresu poziom motywacji, a wyniku egzaminu, możemy zauważyć, że im wyższa motywacja, tym wyniki osiągane przez uczniów były większe. Z drugiej strony możemy zauważyć asymetryczność dla motywacji niskiej i wysokiej. Najwięcej odstających wartośći jest dla wyników uczniów, z motywacją średnią.
+
+Na podstawie wykresu typ szkoły, a wyniku egzaminu, możemy zauważyć, że wyniki dla obu szkół rozkładają się podobnie symetrycznie. Z druegiej strony możemy zauważyć, więcej wyników odstającyh dla uczniów ze szkół publicznych.
 
 ### 3.5 Histogramy
 
@@ -278,11 +279,10 @@ Na podstawie wykresu punktowego wynik egzaminu, a poprzedni wynik egzaminu może
 
 ### 4.1 Statystyki opisowe
 
-Obliczamy podstawowe statystyki, takie jak minimum, maksimum, mediana, kwartyle, średnia i odchylenie standardowe.
+Obliczamy podstawowe statystyki, między innymi takie jak, minimum, maksimum, mediana, kwartyle, średnia i odchylenie standardowe.
 
 ```{r}
 str(czynniki3$Exam_Score)  # Sprawdzenie struktury danych
-
 # Obliczanie poszczególnych statystyk (testowe bo inaczej nie działało)
 Min <- min(czynniki3$Exam_Score, na.rm = TRUE)
 Max <- max(czynniki3$Exam_Score, na.rm = TRUE)
@@ -294,19 +294,11 @@ Odch_std <- sd(czynniki3$Exam_Score, na.rm = TRUE)
 IQR_value <- IQR(czynniki3$Exam_Score, na.rm = TRUE)
 Skosnosc <- skewness(czynniki3$Exam_Score, na.rm = TRUE)
 Kurtoza_value <- kurtosis(czynniki3$Exam_Score, na.rm = TRUE)
-
-# Wyniki wstępne
 print(c(Min, Max, Kwartyl_dolny, Mediana, Kwartyl_gorny, Srednia, Odch_std, IQR_value, Skosnosc, Kurtoza_value))
-
-# Obliczanie procentowych odchyleń
 Odch_std_pct <- (Odch_std / Srednia) * 100
 Odch_cwiartkowe_pct <- (IQR_value / Mediana) * 100
 Odchylenie_cwiartkowe <- IQR_value / 2
-
-# Wyniki obliczeń
 print(c(Odch_std_pct, Odch_cwiartkowe_pct, Odchylenie_cwiartkowe))
-
-# Ramki danych z obliczonymi statystykami
 statystyki <- data.frame(
   Min = round(Min, 3),
   Max = round(Max, 3),
@@ -322,24 +314,12 @@ statystyki <- data.frame(
   "Odch. ćwiartkowe w %" = round(Odch_cwiartkowe_pct, 3),
   "Odchylenie ćwiartkowe" = round(Odchylenie_cwiartkowe, 3)
 )
-# Transponowanie tabeli statystyk
 statystyki <- t(statystyki)
-
-# Konwertowanie tabeli na data.frame
 statystyki <- as.data.frame(statystyki)
-
-# Dodanie nazwy kolumny dla wartości
 colnames(statystyki) <- c("Wartości")
-
-# Przypisujemy statystyki do odpowiedniej kolumny
 statystyki$Statystyki <- rownames(statystyki)
-
-# Zmieniamy kolejność kolumn
 statystyki <- statystyki[, c("Statystyki", "Wartości")]
-
-# Wyświetlenie tabeli
 print(statystyki)
-
 ```
 
 ### 4.2 Korelacje
