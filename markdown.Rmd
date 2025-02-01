@@ -15,7 +15,8 @@ Celem naszego projektu jest przeprowadzenie szczegółowej analizy wpływu róż
 
 ^Wczytujemy dane z zewnętrznego źródła oraz potrzebne biblioteki do analizy i wizualizacji danych.^
 
-```{r include=FALSE}
+```{r}
+options(repos = c(CRAN = "https://cloud.r-project.org/"))
 library(RCurl)
 x <- getURL('https://raw.githubusercontent.com/Guzioz/Smieszna-nazwa-projektu-Analiza/refs/heads/main/czynniki.csv')
 czynniki <- read.csv(text = x)
@@ -125,7 +126,7 @@ LICZBA_NA2
 
 Reszte zmiennych postanawiamy zastąpić przy użyciu metody mice. Która będzie najlepsza wobec zastąpywania brakujących wartości dla naszych danych.
 
-```{r echo=FALSE}
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
 method <- make.method(czynniki2)
 method[c("Sleep_Hours", "Previous_Scores", "Tutoring_Sessions", "Physical_Activity", "Exam_Score")] <- "pmm"
 method[c("Internet_Access", "Gender", "Extracurricular_Activities")] <- "logreg"
@@ -133,6 +134,9 @@ method[c("Family_Income", "Teacher_Quality", "Parental_Education_Level", "Distan
          "Motivation_Level", "Learning_Disabilities", "School_Type", "Peer_Influence")] <- "polyreg"
 czynnikisleep <- mice(czynniki2, m = 5, method = method, seed = 500)
 czynniki3 <- complete(czynnikisleep, 1)
+```
+
+```{r}
 LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki3)))
 LICZBA_NA
 ```
@@ -143,7 +147,7 @@ LICZBA_NA
 
 Tworzymy wykres pudełkowy, oraz histogram dla zmiennej wynikowej(Exam_Score).
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 b1 <- ggplot(czynniki3, aes(y = Exam_Score)) +
   geom_boxplot() +
   labs(title = "Exam_Score")
@@ -160,7 +164,7 @@ Na powyższych wykresach możemy zauważyć, że znacząca większość uczniów
 
 Tworzymy wykresy kołowe dla zmiennych kategorycznych, takich jak dostęp do Internetu, oraz obecności trudności w nauce, aby zobaczyć proporcje poszczególnych kategorii i łatwiej zinterpretować dane.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 fill_colors <- c("Yes" = "blue", "No" = "red")
 create_pie_chart <- function(data, var, fill_colors) {
   ggplot(data, aes(x = "", fill = as.factor(!!sym(var)))) +
@@ -177,6 +181,7 @@ pie_internet <- create_pie_chart(czynniki3, "Internet_Access", fill_colors)
 pie_learning_disabilities <- create_pie_chart(czynniki3, "Learning_Disabilities", fill_colors)
 print(pie_internet)
 print(pie_learning_disabilities)
+pie_internet | pie_learning_disabilities
 ```
 
 Powyższy wykres przedstawiający procentowy dostęp uczniów do internetu, ukazuje, że tylko 8% uczniów nie ma dostępu do internetu.
@@ -187,7 +192,7 @@ Kolejny wykres kołowy, ukazuje, że aż 11% uczniów ma pewne trudności w nauc
 
 Tworzymy wykresy słupkowe dla zmiennych kategorycznych, takich jak płeć, wpływ rówieśników, poziomu dochodu rodziny, oraz odległości od domu do szkoły, aby porównać liczebność grup i zauważyć ewentualne nierówności.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 gender_colors <- c("Female" = "pink", "Male" = "blue")
 peer_influence_colors <- c("Neutral" = "blue", "Positive" = "green", "Negative" = "red")
 family_income_colors <- c("Low" = "red", "Medium" = "blue", "High" = "green")
@@ -230,7 +235,7 @@ Ostatni wykres ukazuje wpływ rówieśników na ucznia, ciekawym faktem może by
 
 Tworzymy wykresy pudełkowe, by zobaczyć, jak jakość nauczycieli, poziom wyedukowania rodziców, poziom motywacji, czy typ szkoły wpływają na wyniki egzaminów.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 categorical_vars <- c("Teacher_Quality", "Parental_Education_Level", "Motivation_Level", "School_Type")
 for (i in seq_along(categorical_vars)) {
   var <- categorical_vars[i]
@@ -255,7 +260,7 @@ Na podstawie wykresu typ szkoły, a wyniku egzaminu, możemy zauważyć, że wyn
 
 Tworzymy histogramy dla zmiennych liczbowych jak, godziny nauki, liczba godzin snu, liczba sesji korepetycji w miesiącu, średnia liczba godzin aktywności fizycznej, aby zrozumieć rozkład każdej zmiennej i zauważyć ewentualne skupienia lub wartości odstające.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 numeric_vars <- c("Hours_Studied", "Sleep_Hours", 
                   "Tutoring_Sessions", "Physical_Activity")
 for (var in numeric_vars) {
@@ -273,7 +278,7 @@ Możemy zauważyć wobec rozkładów liczby godzin nauki, snu, oraz aktywności 
 
 Tworzymy wykresy punktowe (scatter plots) dla zmiennych liczbowych, takich jak frekwencja, oraz poprzedni wynik egzaminu w odniesieniu do wyniku egzaminu.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 numeric_vars <- c("Attendance", "Previous_Scores")
 for (var in numeric_vars) {
   scatter_plot <- ggplot(czynniki3, aes_string(x = var, y = "Exam_Score")) +
@@ -294,7 +299,7 @@ Na podstawie wykresu punktowego wynik egzaminu, a poprzedni wynik egzaminu może
 
 Obliczamy podstawowe statystyki, między innymi takie jak, minimum, maksimum, mediana, kwartyle, średnia i odchylenie standardowe.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 str(czynniki3$Exam_Score)  # Sprawdzenie struktury danych
 # Obliczanie poszczególnych statystyk (testowe bo inaczej nie działało)
 Min <- min(czynniki3$Exam_Score, na.rm = TRUE)
@@ -341,7 +346,7 @@ Po przeprowadzonej analizie statystyki opisowej możemy zobaczyć, że średnia 
 
 Tworzymy macierz korelacji, by zbadać, jak różne czynniki są ze sobą powiązane, aby zidentyfikować silne korelacje, które mogą wskazywać na potencjalne przyczyny wysokich lub niskich wyników egzaminów.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 czynniki_kor <- czynniki3
 czynniki_kor$Parental_Involvement <- as.numeric(factor(czynniki_kor$Parental_Involvement, levels = c("Low", "Medium", "High"), labels = c(1, 2, 3)))
 czynniki_kor$Access_to_Resources <- as.numeric(factor(czynniki_kor$Access_to_Resources, levels = c("High", "Medium", "Low"), labels = c(1, 2, 3)))
@@ -374,7 +379,7 @@ corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
 
 Analizujemy zależność korelacji Liczby Godzin Nauki, wobec Wyniu Egazminu (Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggscatterstats(
   data = czynniki3,
   x = Hours_Studied,
@@ -392,7 +397,7 @@ Choć ostateczny wynik był spodziewany, to analiza wykazała, że liczba godzin
 
 Analizujemy zależność korelacji Wcześniejszego Wyniku, wobec Wyniu Egazminu (Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Korelacja Exam_Score vs Previous_Scores
 ggscatterstats(
   data = czynniki3,
@@ -411,7 +416,7 @@ Przeprowadzony test wykazał, że wcześniejszy wynik ma istotny wpływ na wynik
 
 Analizujemy zależność liniową Wyniku Egzaminu wobec Czasu Aktywności Fizycznej, oraz Średniego Czasu Snu (Przyjęty poziom istotności alfa = 0,05).
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 #Tworzymy model regresji liniowej z Physical_Activity i Sleep_Hours jako zmiennymi objaśniającymi
 model1 <- lm(Exam_Score ~ Physical_Activity + Sleep_Hours, data = czynniki3)
 
@@ -432,7 +437,7 @@ Przeprowadzona zależność liniowa wykazała, że aktywność fizyczna ma istot
 
 Analizujemy zależność korelacji Frekwencji, wobec Wyniu Egazminu (Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggscatterstats(
   data = czynniki3,
   x = Attendance,
@@ -450,7 +455,7 @@ Przeprowadzony test wykazał, że frekwencja ma istotny wpływ na wynik egzaminu
 
 Porównujemy wielkości efektów dla Wyniu Egazminu, ze względu na płeć (Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy statystyke g Hedge'a.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggbetweenstats(
   data = czynniki3,
   x = Gender,
@@ -468,7 +473,7 @@ Przeprowadzony test wykazał, że wynik egzaminu, nie jest zależny od płci, ws
 
 Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Dostęp do Zasobów Edukacyjnych (Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggbetweenstats(
   data = czynniki3,
   x = Access_to_Resources,
@@ -486,7 +491,7 @@ Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu dost�
 
 Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Poziom Zaangażowania Rodziców (Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggbetweenstats(
   data = czynniki3,
   x = Parental_Involvement,
