@@ -142,7 +142,7 @@ LICZBA_NA
 
 ### 3.1 Wizualizacja zmiennej objaśnianej (Exam_Score)
 
-Tworzymy wykresy pudełkowe (boxplot) oraz histogramy dla zmiennej wynikowej (Exam_Score).Z wykorzystaniem pakietów \*\**ggplot2*
+Tworzymy wykres pudełkowy, oraz histogram dla zmiennej wynikowej(Exam_Score).
 
 ```{r}
 b1 <- ggplot(czynniki3, aes(y = Exam_Score)) +
@@ -154,10 +154,11 @@ h1 <- ggplot(czynniki3) +
   theme_minimal()
 grid.arrange(b1, h1, nrow = 1)
 ```
+Na powyższych wykresach możemy zauważyć, że znacząca większość uczniów osiąga wyniki między 65-70%. Z drugiej strony widzimy odstające wartości powyżej 70%, co może sugerować skośność prawostronną, co zostanie przeanalizowane w dalszej części projektu.
 
 ### 3.2 Wykresy kołowe
 
-Tworzymy wykresy kołowe dla zmiennych kategorycznych, takich jak dostęp do Internetu czy aktywności dodatkowe, aby zobaczyć proporcje poszczególnych kategorii i łatwiej zinterpretować dane.
+Tworzymy wykresy kołowe dla zmiennych kategorycznych, takich jak dostęp do Internetu, oraz obecności trudności w nauce, aby zobaczyć proporcje poszczególnych kategorii i łatwiej zinterpretować dane.
 
 ```{r}
 fill_colors <- c("Yes" = "blue", "No" = "red")
@@ -180,7 +181,7 @@ print(pie_learning_disabilities)
 
 ### 3.3 Wykresy słupkowe
 
-Tworzymy wykresy słupkowe dla zmiennych kategorycznych, takich jak płeć czy poziom dochodów, aby porównać liczebność grup i zauważyć ewentualne nierówności
+Tworzymy wykresy słupkowe dla zmiennych kategorycznych, takich jak płeć, wpływ rówieśników, poziomu dochodu rodziny, oraz odległości od domu do szkoły, aby porównać liczebność grup i zauważyć ewentualne nierówności.
 
 ```{r}
 gender_colors <- c("Female" = "pink", "Male" = "blue")
@@ -213,6 +214,14 @@ peer_influence_plot <- ggplot(czynniki3, aes(x = Peer_Influence, fill = as.facto
 print(peer_influence_plot)
 ```
 
+Na podstawie powyższych wykresów możemy zauważyć, że większość wśród uczniów stanowią mężczyźni o prawie tysiąc uczniów więcej.
+
+Dodatkowo, znacząca większość uczniów pochodzi z rodzin, które posiadają dochody niskie, oraz średnio(około tylu samo uczniów na katergorie), a niewiele ponad tysiąc uczniów pochodzi z rodzin oiągających wysokie dochody.
+
+Kolejny wykres ukazuje, że znacząco ponad połowa uczniów pochodzi z rejonów, które znajdują się blisko szkoły.
+
+Ostatni wykres ukazuje wpływ rówieśników na ucznia, ciekawym faktem może być to, że porównywalnie tyle samo uczniów odczówa pozytywny wpływ, jak i negatywny.
+
 ### 3.4 Wykresy pudełkowe
 
 Tworzymy wykresy pudełkowe, by zobaczyć, jak różne czynniki (np. typ szkoły, poziom motywacji) wpływają na wyniki egzaminów.
@@ -232,7 +241,7 @@ for (i in seq_along(categorical_vars)) {
 
 ### 3.5 Histogramy
 
-Tworzymy histogramy dla zmiennych liczbowych (np. godziny nauki, liczba sesji korepetycji), aby zrozumieć rozkład każdej zmiennej i zauważyć ewentualne skupienia lub wartości odstające.
+Tworzymy histogramy dla zmiennych liczbowych jak, godziny nauki, liczba godzin snu, liczba sesji korepetycji w miesiącu, średnia liczba godzin aktywności fizycznej, aby zrozumieć rozkład każdej zmiennej i zauważyć ewentualne skupienia lub wartości odstające.
 
 ```{r}
 numeric_vars <- c("Hours_Studied", "Sleep_Hours", 
@@ -245,10 +254,11 @@ for (var in numeric_vars) {
   print(hist_plot)
 }
 ```
+Możemy zauważyć wobec rozkładów liczby godzin nauki, snu, oraz aktywności fizycznej mniej więcej symetryczne rozkłady, które  nie mają większych odstających wartości. Z drugiej strony, na wykresie średniej liczby sesji korepetycji w miesiącu, możemy zaobserwować skośność prawostronną, gdzie większość uczniów ma maksymalnie do około 2 sesji miesięcznie, a reszta potrafi mieć nawet do 8 sesji miesięcznie.
 
 ### 3.6 Wykres punktowy
 
-Tworzymy wykresy punktowe (scatter plots) dla zmiennych liczbowych w odniesieniu do wyniku egzaminu.
+Tworzymy wykresy punktowe (scatter plots) dla zmiennych liczbowych, takich jak frekwencja, oraz poprzedni wynik egzaminu w odniesieniu do wyniku egzaminu.
 
 ```{r}
 numeric_vars <- c("Attendance", "Previous_Scores")
@@ -260,6 +270,9 @@ for (var in numeric_vars) {
   print(scatter_plot)
 }
 ```
+Na podstawie wykresu punktowego wynik egzaminu, a frekwencja możemy zauważyć pewien trend, który ukazuje, że im większa frekwencja tym średnio wynik egzaminu był wyższy. Dodatkowo możemy zauważyć pewne odstające wartości, które osiągał znacząco większe wyniki od średniej.
+
+Na podstawie wykresu punktowego wynik egzaminu, a poprzedni wynik egzaminu możemy zauważyć, że wyniki rozkładają się w porównywalnie w ten sam sposób, nie zależnie od poprzedniego wyniku egzaminu.
 
 ## 4. Statystyki
 
@@ -361,8 +374,11 @@ corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
 ```
 
 ## 5. Testowanie i wnioskowanie statystyczne
+
 ### 5.1. Test Korelacji Exam_Score vs Hours_Studied
-Analizujemy zależność korelacji Liczby Godzin Nauki, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona. 
+
+Analizujemy zależność korelacji Liczby Godzin Nauki, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
+
 ```{r}
 ggscatterstats(
   data = czynniki3,
@@ -374,10 +390,13 @@ ggscatterstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
-Choć ostateczny wynik był spodziewany, to analiza wykazała, że liczba godzin nauki ma istotny wpływ na wynik egazminu, współczynnik p<0,05(przyjęty poziom istotności)
+
+Choć ostateczny wynik był spodziewany, to analiza wykazała, że liczba godzin nauki ma istotny wpływ na wynik egazminu, współczynnik p\<0,05(przyjęty poziom istotności)
 
 ### 5.2. Test Korelacji Exam_Score vs Previous_Scores
-Analizujemy zależność korelacji Wcześniejszego Wyniku, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona. 
+
+Analizujemy zależność korelacji Wcześniejszego Wyniku, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
+
 ```{r}
 # Korelacja Exam_Score vs Previous_Scores
 ggscatterstats(
@@ -390,10 +409,13 @@ ggscatterstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
-Przeprowadzony test wykazał, że wcześniejszy wynik ma istotny wpływ na wynik egzaminu, współczynnik p<0,05(przyjęty poziom istotności).
 
-### 5.3. Model regresji liniowej Exam_Score ~ Physical_Activity + Sleep_Hours
-Analizujemy zależność liniową Wyniku Egzaminu wobec Czasu Aktywności Fizycznej, oraz Średniego Czasu Snu(Przyjęty poziom istotności alfa = 0,05). 
+Przeprowadzony test wykazał, że wcześniejszy wynik ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05(przyjęty poziom istotności).
+
+### 5.3. Model regresji liniowej Exam_Score \~ Physical_Activity + Sleep_Hours
+
+Analizujemy zależność liniową Wyniku Egzaminu wobec Czasu Aktywności Fizycznej, oraz Średniego Czasu Snu(Przyjęty poziom istotności alfa = 0,05).
+
 ```{r}
 #Tworzymy model regresji liniowej z Physical_Activity i Sleep_Hours jako zmiennymi objaśniającymi
 model1 <- lm(Exam_Score ~ Physical_Activity + Sleep_Hours, data = czynniki3)
@@ -408,10 +430,13 @@ plot1 <- ggcoefstats(
 # Rysowanie wykresu
 print(plot1)
 ```
-Przeprowadzona zależność liniowa wykazała, że aktywność fizyczna ma istotny wpływ na wynik egzaminu, współczynnik p<0,05(przyjęty poziom istotności). Z drugiej strony czas snu jest nie istonty na wynik egzaminu, współczynnik p>0,05(przyjęty poziom istotności)
+
+Przeprowadzona zależność liniowa wykazała, że aktywność fizyczna ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05(przyjęty poziom istotności). Z drugiej strony czas snu jest nie istonty na wynik egzaminu, współczynnik p\>0,05(przyjęty poziom istotności)
 
 ### 5.4. Test Korelacji Exam_Score vs Attendance
+
 Analizujemy zależność korelacji Frekwencji, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
+
 ```{r}
 ggscatterstats(
   data = czynniki3,
@@ -423,10 +448,13 @@ ggscatterstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
-Przeprowadzony test wykazał, że frekwencja ma istotny wpływ na wynik egzaminu, współczynnik p<0,05(przyjęty poziom istotności).
+
+Przeprowadzony test wykazał, że frekwencja ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05(przyjęty poziom istotności).
 
 ### 5.5. Analiza porównawcza Exam_Score według Gender
+
 Porównujemy wielkości efektów dla Wyniu Egazminu, ze względu na płeć(Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy statystyke g Hedge'a.
+
 ```{r}
 ggbetweenstats(
   data = czynniki3,
@@ -438,10 +466,13 @@ ggbetweenstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
-Przeprowadzony test wykazał, że wynik egzaminu, nie jest zależny od płci, współczynnik p>0,05(przyjęty poziom istotności).
+
+Przeprowadzony test wykazał, że wynik egzaminu, nie jest zależny od płci, współczynnik p\>0,05(przyjęty poziom istotności).
 
 ### 5.6. Analiza porównawcza Exam_Score według Access_to_Resources
+
 Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Dostęp do Zasobów Edukacyjnych(Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
+
 ```{r}
 ggbetweenstats(
   data = czynniki3,
@@ -453,10 +484,13 @@ ggbetweenstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
-Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu dostępu do zasobów edukacyjnych, współczynnik p<0,05(przyjęty poziom istotności).
+
+Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu dostępu do zasobów edukacyjnych, współczynnik p\<0,05(przyjęty poziom istotności).
 
 ### 5.7. Analiza porównawcza Exam_Score według Parental_Involvement
+
 Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Poziom Zaangażowania Rodziców(Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
+
 ```{r}
 ggbetweenstats(
   data = czynniki3,
@@ -468,4 +502,7 @@ ggbetweenstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
-Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu zaangażowania rodziców, współczynnik p<0,05(przyjęty poziom istotności).
+
+Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu zaangażowania rodziców, współczynnik p\<0,05(przyjęty poziom istotności).
+
+## 6. Podsumowanie
