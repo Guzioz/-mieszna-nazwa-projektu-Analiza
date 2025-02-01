@@ -1,3 +1,5 @@
+# Czynniki wpływające na wynik egzaminu
+
 ```{r}
 #title:"Smieszna nazwa projektu"
 #author: "Beniamin Gralak i Jakub Gużewski"
@@ -5,11 +7,15 @@
 #output: html_document
 ```
 
+# PROBLEM
+
+Celem naszego projektu jest przeprowadzenie szczegółowej analizy wpływu różnych czynników na wyniki egzaminacyjne uczniów. Badanie opiera się na danych obejmujących szereg zmiennych, które mogą mieć istotne znaczenie dla osiąganych rezultatów. W szczególności skupiamy się na analizie zależności między wynikami egzaminów a takimi czynnikami jak liczba godzin snu, czas poświęcony na naukę, płeć ucznia oraz odległość z domu do szkoły itp.
+
 ## 1. Wczytywanie danych i bibliotek
 
 ^Wczytujemy dane z zewnętrznego źródła oraz potrzebne biblioteki do analizy i wizualizacji danych.^
 
-```{r}
+```{r include=FALSE}
 library(RCurl)
 x <- getURL('https://raw.githubusercontent.com/Guzioz/Smieszna-nazwa-projektu-Analiza/refs/heads/main/czynniki.csv')
 czynniki <- read.csv(text = x)
@@ -25,9 +31,7 @@ install.packages("ggstatsplot")
 library("ggstatsplot")
 ```
 
-# PROBLEM
-
-Celem naszego projektu jest przeprowadzenie szczegółowej analizy wpływu różnych czynników na wyniki egzaminacyjne uczniów. Badanie opiera się na danych obejmujących szereg zmiennych, które mogą mieć istotne znaczenie dla osiąganych rezultatów. W szczególności skupiamy się na analizie zależności między wynikami egzaminów a takimi czynnikami jak liczba godzin snu, czas poświęcony na naukę, płeć ucznia oraz odległość z domu do szkoły itp.
+## 2. Zapoznanie i czyszczenie danych
 
 ### Dane zawierają następujące kolumny:
 
@@ -39,7 +43,7 @@ Celem naszego projektu jest przeprowadzenie szczegółowej analizy wpływu róż
 
 \- Parental_Involvement: Poziom zaangażowania rodziców w edukację ucznia (Low/Medium/High)
 
-\- Access_to_Resources: Dostępność zasobów edukacyjnych (niska, średnia, wysoka)
+\- Access_to_Resources: Dostępność zasobów edukacyjnych (Low/Medium/High)
 
 \- Peer_Influence: Wpływ rówieśników na wyniki w nauce (Positive/Negative/Neutral)
 
@@ -51,10 +55,10 @@ Celem naszego projektu jest przeprowadzenie szczegółowej analizy wpływu róż
 
 \- Family_Income: Poziom dochodów rodziny (Low/Medium/High)
 
-## 2. Zapoznanie i czyszczenie danych
-
 ### 2.1 Wstępne informacje i typ danych
-Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, jak na przykład brakujące zmienne.
+
+Analizujemy strukturę danych oraz sprawdzamy podstawowe statystyki opisowe każdej zmiennej, aby zrozumieć, jakie dane posiadamy i jakie są potencjalne problemy, jak na przykład brakujące zmienne.
+
 ```{r}
 summary(czynniki)
 ```
@@ -62,12 +66,16 @@ summary(czynniki)
 ```{r}
 str(czynniki)
 ```
-Poniżej przedstawiliśmy brakujące wartości jakie pojawiły się w bazie danych. 
+
+Poniżej przedstawiliśmy brakujące wartości jakie pojawiły się w bazie danych.
+
 ```{r}
 LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki)))
 LICZBA_NA
 ```
-Poniżej przedstawiliśmy ilości unikatowych wartości dla każdej zmiennej. 
+
+Poniżej przedstawiliśmy ilości unikatowych wartości dla każdej zmiennej.
+
 ```{r}
 WARTOSCI_BEZ_NA <- data.frame(liczba_unikatowych_wartosci = sapply(czynniki, function(x) length(unique(na.omit(x)))))
 WARTOSCI_BEZ_NA
@@ -75,7 +83,7 @@ WARTOSCI_BEZ_NA
 
 ### 2.2 Standaryzacja wartości
 
-Wyświetlamy posiadane wartości, oraz standaryzujemy. Robimy ograniczenia, chociażby dla wyników, które nie powinny przekraczać 100. Dodatkowo przypisujemy zmienne kategoryczne do faktorów, w celu przeprowadzenia dalszej analizy.
+Wyświetlamy posiadane wartości oraz standaryzujemy. Robimy ograniczenia, chociażby dla wyników, które nie powinny przekraczać 100. Dodatkowo przypisujemy zmienne kategoryczne do faktorów, w celu przeprowadzenia dalszej analizy.
 
 ```{r}
 typ_danych <- data.frame(typ = sapply(czynniki, class))
@@ -106,23 +114,23 @@ czynniki$Gender <- factor(czynniki$Gender, levels = c("Male", "Female"))
 ```
 
 ### 2.3 Czyszczenie brakujących wartości
-Początkowo usuwamy brakujące wartości wyników egzaminu, ze względu na to, że jest to zmienna badana. W celu ograniczenia ryzyka, uważamy, że jest to ważne dla dalszej analizy
+
+Początkowo usuwamy brakujące wartości wyników egzaminu, ze względu na to, że jest to zmienna badana. W celu ograniczenia ryzyka, uważamy, że jest to ważne dla dalszej analizy.
+
 ```{r}
 czynniki2 <- subset(czynniki, !is.na(Exam_Score))
 LICZBA_NA2 <- data.frame(liczba_brakow = colSums(is.na(czynniki2)))
 LICZBA_NA2
 ```
-Reszte zmiennych postanawiamy zastąpić przy użyciu metody mice. Która będzie najlepsza wobec zastąpywania brakujących wartości dla naszych danych
-```{r}
+
+Reszte zmiennych postanawiamy zastąpić przy użyciu metody mice. Która będzie najlepsza wobec zastąpywania brakujących wartości dla naszych danych.
+
+```{r echo=FALSE}
 method <- make.method(czynniki2)
 method[c("Sleep_Hours", "Previous_Scores", "Tutoring_Sessions", "Physical_Activity", "Exam_Score")] <- "pmm"
 method[c("Internet_Access", "Gender", "Extracurricular_Activities")] <- "logreg"
 method[c("Family_Income", "Teacher_Quality", "Parental_Education_Level", "Distance_from_Home", 
          "Motivation_Level", "Learning_Disabilities", "School_Type", "Peer_Influence")] <- "polyreg"
-print(method)
-```
-
-```{r}
 czynnikisleep <- mice(czynniki2, m = 5, method = method, seed = 500)
 czynniki3 <- complete(czynnikisleep, 1)
 LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki3)))
@@ -145,6 +153,7 @@ h1 <- ggplot(czynniki3) +
   theme_minimal()
 grid.arrange(b1, h1, nrow = 1)
 ```
+
 Na powyższych wykresach możemy zauważyć, że znacząca większość uczniów osiąga wyniki między 65-70%. Z drugiej strony widzimy odstające wartości powyżej 70%, co może sugerować skośność prawostronną, co zostanie przeanalizowane w dalszej części projektu.
 
 ### 3.2 Wykresy kołowe
@@ -169,6 +178,7 @@ pie_learning_disabilities <- create_pie_chart(czynniki3, "Learning_Disabilities"
 print(pie_internet)
 print(pie_learning_disabilities)
 ```
+
 Powyższy wykres przedstawiający procentowy dostęp uczniów do internetu, ukazuje, że tylko 8% uczniów nie ma dostępu do internetu.
 
 Kolejny wykres kołowy, ukazuje, że aż 11% uczniów ma pewne trudności w nauce, co może sugerować obecność pewnych dysfunkcji wśród uczniów
@@ -232,6 +242,7 @@ for (i in seq_along(categorical_vars)) {
   print(plot)
 }
 ```
+
 Na podstawie wykresu jakości nauczycieli, a wyniku egzaminu, możemy zauważyć lekką asymetryczność, dla wyników low, oraz high. Uczniowie, mający nauczycieli, których ocenili na wysoką jakość, mieli szanse na osiągnięcie lepszych wyników, niż Ci z na przykład niską jakościa. Możemy dodatkowo zauważyć, że nauczyciele ocenieni na jakość średnią, mieli najwięcej odstający wyników.
 
 Na podstawie wykresu poziom wykształcenia rodziców, a wyniku egzaminu, możemy zauważyć, że im wyższe wykształcenie rodziców, tym wyniki osiągane przez uczniów były większe. Z drugiej strony możemy zauważyć asymetryczność dla rodziców z wykształceniem wyższym. Najwięcej odstających wartośći jest dla wyników uczniów, których rodzice mają wykształcene policealne.
@@ -255,7 +266,8 @@ for (var in numeric_vars) {
   print(hist_plot)
 }
 ```
-Możemy zauważyć wobec rozkładów liczby godzin nauki, snu, oraz aktywności fizycznej mniej więcej symetryczne rozkłady, które  nie mają większych odstających wartości. Z drugiej strony, na wykresie średniej liczby sesji korepetycji w miesiącu, możemy zaobserwować skośność prawostronną, gdzie większość uczniów ma maksymalnie do około 2 sesji miesięcznie, a reszta potrafi mieć nawet do 8 sesji miesięcznie.
+
+Możemy zauważyć wobec rozkładów liczby godzin nauki, snu, oraz aktywności fizycznej mniej więcej symetryczne rozkłady, które nie mają większych odstających wartości. Z drugiej strony, na wykresie średniej liczby sesji korepetycji w miesiącu, możemy zaobserwować skośność prawostronną, gdzie większość uczniów ma maksymalnie do około 2 sesji miesięcznie, a reszta potrafi mieć nawet do 8 sesji miesięcznie.
 
 ### 3.6 Wykres punktowy
 
@@ -271,6 +283,7 @@ for (var in numeric_vars) {
   print(scatter_plot)
 }
 ```
+
 Na podstawie wykresu punktowego wynik egzaminu, a frekwencja możemy zauważyć pewien trend, który ukazuje, że im większa frekwencja tym średnio wynik egzaminu był wyższy. Dodatkowo możemy zauważyć pewne odstające wartości, które osiągał znacząco większe wyniki od średniej.
 
 Na podstawie wykresu punktowego wynik egzaminu, a poprzedni wynik egzaminu możemy zauważyć, że wyniki rozkładają się w porównywalnie w ten sam sposób, nie zależnie od poprzedniego wyniku egzaminu.
@@ -357,7 +370,7 @@ corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
 
 ### 5.1. Test Korelacji Exam_Score vs Hours_Studied
 
-Analizujemy zależność korelacji Liczby Godzin Nauki, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
+Analizujemy zależność korelacji Liczby Godzin Nauki, wobec Wyniu Egazminu (Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
 
 ```{r}
 ggscatterstats(
@@ -371,11 +384,11 @@ ggscatterstats(
 )
 ```
 
-Choć ostateczny wynik był spodziewany, to analiza wykazała, że liczba godzin nauki ma istotny wpływ na wynik egazminu, współczynnik p\<0,05(przyjęty poziom istotności)
+Choć ostateczny wynik był spodziewany, to analiza wykazała, że liczba godzin nauki ma istotny wpływ na wynik egazminu, współczynnik p\<0,05 (przyjęty poziom istotności)
 
 ### 5.2. Test Korelacji Exam_Score vs Previous_Scores
 
-Analizujemy zależność korelacji Wcześniejszego Wyniku, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
+Analizujemy zależność korelacji Wcześniejszego Wyniku, wobec Wyniu Egazminu (Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
 
 ```{r}
 # Korelacja Exam_Score vs Previous_Scores
@@ -390,11 +403,11 @@ ggscatterstats(
 )
 ```
 
-Przeprowadzony test wykazał, że wcześniejszy wynik ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05(przyjęty poziom istotności).
+Przeprowadzony test wykazał, że wcześniejszy wynik ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05 (przyjęty poziom istotności).
 
 ### 5.3. Model regresji liniowej Exam_Score \~ Physical_Activity + Sleep_Hours
 
-Analizujemy zależność liniową Wyniku Egzaminu wobec Czasu Aktywności Fizycznej, oraz Średniego Czasu Snu(Przyjęty poziom istotności alfa = 0,05).
+Analizujemy zależność liniową Wyniku Egzaminu wobec Czasu Aktywności Fizycznej, oraz Średniego Czasu Snu (Przyjęty poziom istotności alfa = 0,05).
 
 ```{r}
 #Tworzymy model regresji liniowej z Physical_Activity i Sleep_Hours jako zmiennymi objaśniającymi
@@ -411,11 +424,11 @@ plot1 <- ggcoefstats(
 print(plot1)
 ```
 
-Przeprowadzona zależność liniowa wykazała, że aktywność fizyczna ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05(przyjęty poziom istotności). Z drugiej strony czas snu jest nie istonty na wynik egzaminu, współczynnik p\>0,05(przyjęty poziom istotności)
+Przeprowadzona zależność liniowa wykazała, że aktywność fizyczna ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05 (przyjęty poziom istotności). Z drugiej strony czas snu jest nie istonty na wynik egzaminu, współczynnik p\>0,05 (przyjęty poziom istotności)
 
 ### 5.4. Test Korelacji Exam_Score vs Attendance
 
-Analizujemy zależność korelacji Frekwencji, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
+Analizujemy zależność korelacji Frekwencji, wobec Wyniu Egazminu (Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
 
 ```{r}
 ggscatterstats(
@@ -433,7 +446,7 @@ Przeprowadzony test wykazał, że frekwencja ma istotny wpływ na wynik egzaminu
 
 ### 5.5. Analiza porównawcza Exam_Score według Gender
 
-Porównujemy wielkości efektów dla Wyniu Egazminu, ze względu na płeć(Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy statystyke g Hedge'a.
+Porównujemy wielkości efektów dla Wyniu Egazminu, ze względu na płeć (Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy statystyke g Hedge'a.
 
 ```{r}
 ggbetweenstats(
@@ -447,11 +460,11 @@ ggbetweenstats(
 )
 ```
 
-Przeprowadzony test wykazał, że wynik egzaminu, nie jest zależny od płci, współczynnik p\>0,05(przyjęty poziom istotności).
+Przeprowadzony test wykazał, że wynik egzaminu, nie jest zależny od płci, współczynnik p\>0,05 (przyjęty poziom istotności).
 
 ### 5.6. Analiza porównawcza Exam_Score według Access_to_Resources
 
-Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Dostęp do Zasobów Edukacyjnych(Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
+Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Dostęp do Zasobów Edukacyjnych (Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
 
 ```{r}
 ggbetweenstats(
@@ -465,11 +478,11 @@ ggbetweenstats(
 )
 ```
 
-Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu dostępu do zasobów edukacyjnych, współczynnik p\<0,05(przyjęty poziom istotności).
+Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu dostępu do zasobów edukacyjnych, współczynnik p\<0,05 (przyjęty poziom istotności).
 
 ### 5.7. Analiza porównawcza Exam_Score według Parental_Involvement
 
-Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Poziom Zaangażowania Rodziców(Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
+Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Poziom Zaangażowania Rodziców (Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
 
 ```{r}
 ggbetweenstats(
@@ -483,6 +496,6 @@ ggbetweenstats(
 )
 ```
 
-Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu zaangażowania rodziców, współczynnik p\<0,05(przyjęty poziom istotności).
+Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu zaangażowania rodziców, współczynnik p\<0,05 (przyjęty poziom istotności).
 
 ## 6. Podsumowanie
