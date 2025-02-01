@@ -296,6 +296,7 @@ print(statystyki)
 
 ```
 
+
 ### 4.2 Korelacje
 
 Tworzymy macierz korelacji, by zbadać, jak różne czynniki są ze sobą powiązane, aby zidentyfikować silne korelacje, które mogą wskazywać na potencjalne przyczyny wysokich lub niskich wyników egzaminów.
@@ -326,6 +327,8 @@ cor_matrix <- cor(czynniki_kor, use = "complete.obs")
 corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
          tl.col = "black", tl.srt = 45)
 ```
+
+## 5. Testowanie i wnioskowanie statystyczne
 
 ```{r}
 # 5. Wykresy korelacyjne ggscatterstats
