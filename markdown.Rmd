@@ -160,16 +160,17 @@ grid.arrange(b1, h1, nrow = 1)
 Tworzymy wykresy kołowe dla zmiennych kategorycznych, takich jak dostęp do Internetu czy aktywności dodatkowe, aby zobaczyć proporcje poszczególnych kategorii i łatwiej zinterpretować dane.
 
 ```{r}
-
 fill_colors <- c("Yes" = "blue", "No" = "red")
 create_pie_chart <- function(data, var, fill_colors) {
-  ggplot(data, aes(x = "", fill = as.factor(!!sym(var)))) +  # Używam as.factor() w aes()
+  ggplot(data, aes(x = "", fill = as.factor(!!sym(var)))) +
     geom_bar(width = 1, color = "white") +
     coord_polar(theta = "y") +
     scale_fill_manual(values = fill_colors) +
     labs(title = paste("Pie Chart of", var), fill = "Categories") +
     theme_void() +
-    theme(legend.position = "top")
+    theme(legend.position = "top") +
+    geom_text(aes(label = scales::percent(..count.. / sum(..count..))),
+              stat = "count", position = position_stack(vjust = 0.5), color = "white")
 }
 pie_internet <- create_pie_chart(czynniki3, "Internet_Access", fill_colors)
 pie_learning_disabilities <- create_pie_chart(czynniki3, "Learning_Disabilities", fill_colors)
@@ -360,11 +361,9 @@ corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
 ```
 
 ## 5. Testowanie i wnioskowanie statystyczne
-
+### 5.1. Test Korelacji Exam_Score vs Hours_Studied
+Analizujemy zależność korelacji Liczby Godzin Nauki, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona. 
 ```{r}
-# 5. Wykresy korelacyjne ggscatterstats
-
-# Korelacja Exam_Score vs Hours_Studied
 ggscatterstats(
   data = czynniki3,
   x = Hours_Studied,
@@ -375,7 +374,10 @@ ggscatterstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
+Choć ostateczny wynik był spodziewany, to analiza wykazała, że liczba godzin nauki ma istotny wpływ na wynik egazminu, współczynnik p<0,05(przyjęty poziom istotności)
 
+### 5.2. Test Korelacji Exam_Score vs Previous_Scores
+Analizujemy zależność korelacji Wcześniejszego Wyniku, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona. 
 ```{r}
 # Korelacja Exam_Score vs Previous_Scores
 ggscatterstats(
@@ -388,7 +390,10 @@ ggscatterstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
+Przeprowadzony test wykazał, że wcześniejszy wynik ma istotny wpływ na wynik egzaminu, współczynnik p<0,05(przyjęty poziom istotności).
 
+### 5.3. Model regresji liniowej Exam_Score ~ Physical_Activity + Sleep_Hours
+Analizujemy zależność liniową Wyniku Egzaminu wobec Czasu Aktywności Fizycznej, oraz Średniego Czasu Snu(Przyjęty poziom istotności alfa = 0,05). 
 ```{r}
 #Tworzymy model regresji liniowej z Physical_Activity i Sleep_Hours jako zmiennymi objaśniającymi
 model1 <- lm(Exam_Score ~ Physical_Activity + Sleep_Hours, data = czynniki3)
@@ -403,7 +408,10 @@ plot1 <- ggcoefstats(
 # Rysowanie wykresu
 print(plot1)
 ```
+Przeprowadzona zależność liniowa wykazała, że aktywność fizyczna ma istotny wpływ na wynik egzaminu, współczynnik p<0,05(przyjęty poziom istotności). Z drugiej strony czas snu jest nie istonty na wynik egzaminu, współczynnik p>0,05(przyjęty poziom istotności)
 
+### 5.4. Test Korelacji Exam_Score vs Attendance
+Analizujemy zależność korelacji Frekwencji, wobec Wyniu Egazminu(Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
 ```{r}
 ggscatterstats(
   data = czynniki3,
@@ -415,7 +423,10 @@ ggscatterstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
+Przeprowadzony test wykazał, że frekwencja ma istotny wpływ na wynik egzaminu, współczynnik p<0,05(przyjęty poziom istotności).
 
+### 5.5. Analiza porównawcza Exam_Score według Gender
+Porównujemy wielkości efektów dla Wyniu Egazminu, ze względu na płeć(Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy statystyke g Hedge'a.
 ```{r}
 ggbetweenstats(
   data = czynniki3,
@@ -427,7 +438,10 @@ ggbetweenstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
+Przeprowadzony test wykazał, że wynik egzaminu, nie jest zależny od płci, współczynnik p>0,05(przyjęty poziom istotności).
 
+### 5.6. Analiza porównawcza Exam_Score według Access_to_Resources
+Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Dostęp do Zasobów Edukacyjnych(Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
 ```{r}
 ggbetweenstats(
   data = czynniki3,
@@ -439,7 +453,10 @@ ggbetweenstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
+Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu dostępu do zasobów edukacyjnych, współczynnik p<0,05(przyjęty poziom istotności).
 
+### 5.7. Analiza porównawcza Exam_Score według Parental_Involvement
+Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Poziom Zaangażowania Rodziców(Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
 ```{r}
 ggbetweenstats(
   data = czynniki3,
@@ -451,3 +468,4 @@ ggbetweenstats(
   ggtheme = ggplot2::theme_minimal()
 )
 ```
+Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu zaangażowania rodziców, współczynnik p<0,05(przyjęty poziom istotności).
