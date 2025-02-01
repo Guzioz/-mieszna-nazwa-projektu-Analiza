@@ -99,7 +99,7 @@ columns_to_check <- c("Hours_Studied", "Attendance", "Parental_Involvement", "Ac
                       "Gender", "Exam_Score")
 unique_values_all <- lapply(czynniki[columns_to_check], unique)
 print(unique_values_all)
-data_cleaned <- subset(czynniki, Exam_Score <= 100)
+czynniki <- subset(czynniki, Exam_Score <= 100)
 czynniki$Family_Income <- factor(czynniki$Family_Income, levels = c("Low", "Medium", "High"))
 czynniki$Teacher_Quality <- factor(czynniki$Teacher_Quality, levels = c("Low", "Medium", "High"))
 czynniki$Parental_Education_Level <- factor(czynniki$Parental_Education_Level, levels = c("High School", "College", "Postgraduate"))
@@ -335,6 +335,8 @@ statystyki <- statystyki[, c("Statystyki", "Wartości")]
 print(statystyki)
 ```
 
+Po przeprowadzonej analizie statystyki opisowej możemy zobaczyć, że średnia oraz mediana są zbliżone około 67. Pomimo tego skośność wychodzi prawostronna, co oznacza, że występują wartości odstające dążące wyniku 100. Dodatkowo, kurtoza potwierdza spiczastość samego rozkładu
+
 ### 4.2 Korelacje
 
 Tworzymy macierz korelacji, by zbadać, jak różne czynniki są ze sobą powiązane, aby zidentyfikować silne korelacje, które mogą wskazywać na potencjalne przyczyny wysokich lub niskich wyników egzaminów.
@@ -499,3 +501,19 @@ ggbetweenstats(
 Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu zaangażowania rodziców, współczynnik p\<0,05 (przyjęty poziom istotności).
 
 ## 6. Podsumowanie
+
+Celem projektu była analiza czynników wpływających na wyniki egzaminów uczniów. W ramach projektu przeprowadziliśmy kompleksową analizę danych zawierających informacje na temat takich zmiennych jak między innymi liczba godzin snu, czas poświęcony na naukę, rodzaj szkoły, czy na przykład wpływ rówieśników i motywacja ucznia.
+
+Proces analizy obejmował kilka kluczowych etapów:
+
+1.  Data Wrangling: Na początek zajęliśmy się przygotowaniem danych. Wczytaliśmy dane z dostępnych źródeł i sprawdziliśmy ich strukturę, aby upewnić się, że zawierają one wszystkie niezbędne informacje. Etap ten obejmował także identyfikację zmiennych, które miały istotny wpływ na wyniki egzaminów. Przeanalizowaliśmy dane pod kątem ich typu, rozkładu oraz obecności błędów w strukturze.
+
+2.  Czyszczenie Danych: Po wstępnym przygotowaniu danych, przystąpiliśmy do oczyszczania ich z błędów i braków. Wykorzystaliśmy techniki imputacji brakujących danych, takie jak imputacja metodą "mice", co pozwoliło nam uzyskać kompletny zbiór danych. Ponadto, usunęliśmy wszelkie niezgodności i błędne wartości, co poprawiło jakość analizy.
+
+3.  Wizualizacja: W kolejnym kroku skoncentrowaliśmy się na wizualizacji danych. Użyliśmy wykresów pudełkowych, histogramów, wykresów słupkowych, kołowych, czy punktowych, aby zobrazować rozkład danych i zależności pomiędzy poszczególnymi zmiennymi. Wizualizacje te pozwoliły na łatwiejsze zrozumienie kluczowych informacji, takich jak rozkład wyników egzaminu czy różnice w wynikach między uczniami o różnym poziomie motywacji i dostępie do zasobów edukacyjnych.
+
+4.  Analiza Opisowa: W ramach analizy opisowej obliczyliśmy podstawowe miary statystyczne, takie jak średnia, mediana, odchylenie standardowe oraz kwartyle dla wyniku egzaminu. Zauważyliśmy, że wyniki uczniów rozkładają się dość równomiernie, a średni wynik egzaminu wynosi około 67%. Przeanalizowaliśmy również skośność i kurtozę, co pozwoliło na lepsze zrozumienie rozkładu wyników wśród uczniów.
+
+5.  Wnioskowanie Statystyczne: Na podstawie wyników analizy opisowej, przystąpiliśmy do wnioskowania statystycznego. Sprawdziliśmy zależności między różnymi czynnikami a wynikami egzaminów. Zauważyliśmy, że czynniki takie jak liczba godzin snu, motywacja uczniów, wsparcie ze strony rodziców oraz dostępność zasobów edukacyjnych mają znaczący wpływ na wyniki. Wykorzystaliśmy testy statystyczne, aby potwierdzić, że obserwowane różnice są istotne i nie wynikają z przypadkowych fluktuacji w danych.
+
+Wyniki naszej analizy pokazują, że wyniki egzaminów zależą od wielu czynników. Kluczowymi zmiennymi, które mają istotny wpływ na wyniki egzaminów, są liczba godzin nauki, wcześniejsze wyniki, aktywność fizyczna, frekwencja, dostęp do zasobów edukacyjnych oraz zaangażowanie rodziców. Z kolei czas snu i płeć nie mają bezpośredniego wpływu na wyniki.
