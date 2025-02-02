@@ -15,7 +15,7 @@ Celem naszego projektu jest przeprowadzenie szczegółowej analizy wpływu róż
 
 ^Wczytujemy dane z zewnętrznego źródła oraz potrzebne biblioteki do analizy i wizualizacji danych.^
 
-```{r}
+```{r message=FALSE, warning=FALSE, paged.print=FALSE, echo = TRUE, results = "hide"}
 options(repos = c(CRAN = "https://cloud.r-project.org/"))
 library(RCurl)
 x <- getURL('https://raw.githubusercontent.com/Guzioz/Smieszna-nazwa-projektu-Analiza/refs/heads/main/czynniki.csv')
@@ -30,6 +30,10 @@ library(corrplot)
 library(moments)
 install.packages("ggstatsplot")
 library("ggstatsplot")
+install.packages("knitr")
+install.packages("kableExtra")
+library(knitr)
+library(kableExtra)
 ```
 
 ## 2. Zapoznanie i czyszczenie danych
@@ -91,6 +95,8 @@ typ_danych <- data.frame(typ = sapply(czynniki, class))
 typ_danych
 ```
 
+Na podstawie poniżej tabeli możemy zobaczyć, jak wyglądają unikalne wartości dla każdej kolumny. Jest to etap, który pozwala nam zwizualizować badaną baze danych.
+
 ```{r}
 columns_to_check <- c("Hours_Studied", "Attendance", "Parental_Involvement", "Access_to_Resources", 
                       "Extracurricular_Activities", "Sleep_Hours", "Previous_Scores", 
@@ -124,9 +130,9 @@ LICZBA_NA2 <- data.frame(liczba_brakow = colSums(is.na(czynniki2)))
 LICZBA_NA2
 ```
 
-Reszte zmiennych postanawiamy zastąpić przy użyciu metody mice. Która będzie najlepsza wobec zastąpywania brakujących wartości dla naszych danych.
+Reszte zmiennych postanawiamy zastąpić przy użyciu metody mice. Która będzie najlepsza wobec zastąpywania brakujących wartości dla naszych danych. Ze względu na to, że mice jest techniką wielokrotnej imputacji, która polega na generowaniu kilku zestawów imputowanych danych, a nie tylko jednej "najlepszej" wartości.
 
-```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+```{r message=FALSE, warning=FALSE, paged.print=FALSE, echo = TRUE, results = "hide"}
 method <- make.method(czynniki2)
 method[c("Sleep_Hours", "Previous_Scores", "Tutoring_Sessions", "Physical_Activity", "Exam_Score")] <- "pmm"
 method[c("Internet_Access", "Gender", "Extracurricular_Activities")] <- "logreg"
@@ -135,7 +141,6 @@ method[c("Family_Income", "Teacher_Quality", "Parental_Education_Level", "Distan
 czynnikisleep <- mice(czynniki2, m = 5, method = method, seed = 500)
 czynniki3 <- complete(czynnikisleep, 1)
 ```
-
 ```{r}
 LICZBA_NA <- data.frame(liczba_brakow = colSums(is.na(czynniki3)))
 LICZBA_NA
@@ -179,8 +184,6 @@ create_pie_chart <- function(data, var, fill_colors) {
 }
 pie_internet <- create_pie_chart(czynniki3, "Internet_Access", fill_colors)
 pie_learning_disabilities <- create_pie_chart(czynniki3, "Learning_Disabilities", fill_colors)
-print(pie_internet)
-print(pie_learning_disabilities)
 pie_internet | pie_learning_disabilities
 ```
 
@@ -202,30 +205,31 @@ gender_plot <- ggplot(czynniki3, aes(x = Gender, fill = as.factor(Gender))) +
   scale_fill_manual(values = gender_colors) +
   labs(title = "Bar Plot of Gender", x = "Gender", y = "Count") +
   theme_minimal()
-print(gender_plot)
 family_income_plot <- ggplot(czynniki3, aes(x = Family_Income, fill = as.factor(Family_Income))) +
   geom_bar() +
   scale_fill_manual(values = family_income_colors) +
   labs(title = "Bar Plot of Family Income", x = "Family Income", y = "Count") +
   theme_minimal()
-print(family_income_plot)
 distance_plot <- ggplot(czynniki3, aes(x = Distance_from_Home, fill = as.factor(Distance_from_Home))) +
   geom_bar() +
   scale_fill_manual(values = distance_from_home_colors) +
   labs(title = "Bar Plot of Distance from Home", x = "Distance from Home", y = "Count") +
   theme_minimal()
-print(distance_plot)
 peer_influence_plot <- ggplot(czynniki3, aes(x = Peer_Influence, fill = as.factor(Peer_Influence))) +
   geom_bar() +
   scale_fill_manual(values = peer_influence_colors) +
   labs(title = "Bar Plot of Peer Influence", x = "Peer Influence", y = "Count") +
   theme_minimal()
-print(peer_influence_plot)
+(gender_plot / family_income_plot) 
 ```
 
 Na podstawie powyższych wykresów możemy zauważyć, że większość wśród uczniów stanowią mężczyźni o prawie tysiąc uczniów więcej.
 
 Dodatkowo, znacząca większość uczniów pochodzi z rodzin, które posiadają dochody niskie, oraz średnio(około tylu samo uczniów na katergorie), a niewiele ponad tysiąc uczniów pochodzi z rodzin oiągających wysokie dochody.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+(distance_plot / peer_influence_plot)
+```
 
 Kolejny wykres ukazuje, że znacząco ponad połowa uczniów pochodzi z rejonów, które znajdują się blisko szkoły.
 
@@ -236,23 +240,46 @@ Ostatni wykres ukazuje wpływ rówieśników na ucznia, ciekawym faktem może by
 Tworzymy wykresy pudełkowe, by zobaczyć, jak jakość nauczycieli, poziom wyedukowania rodziców, poziom motywacji, czy typ szkoły wpływają na wyniki egzaminów.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-categorical_vars <- c("Teacher_Quality", "Parental_Education_Level", "Motivation_Level", "School_Type")
-for (i in seq_along(categorical_vars)) {
-  var <- categorical_vars[i]
-  plot <- ggplot(czynniki3, aes_string(x = var, y = "Exam_Score", fill = var)) +
-    geom_boxplot(color = "black") +
-    labs(title = paste("Boxplot of Exam_Score by", var), x = var, y = "Exam Score") +
-    scale_fill_manual(values = rainbow(length(unique(czynniki3[[var]])))) +
-    theme_minimal()
-  print(plot)
-}
+plot1 <- ggplot(czynniki3, aes_string(x = "Teacher_Quality", y = "Exam_Score", fill = "Teacher_Quality")) +
+  geom_boxplot(color = "black") +
+  labs(title = "Boxplot of Exam_Score by Teacher_Quality", x = "Teacher Quality", y = "Exam Score") +
+  scale_fill_manual(values = rainbow(length(unique(czynniki3[["Teacher_Quality"]])))) +
+  theme_minimal()
+print(plot1)
 ```
 
 Na podstawie wykresu jakości nauczycieli, a wyniku egzaminu, możemy zauważyć lekką asymetryczność, dla wyników low, oraz high. Uczniowie, mający nauczycieli, których ocenili na wysoką jakość, mieli szanse na osiągnięcie lepszych wyników, niż Ci z na przykład niską jakościa. Możemy dodatkowo zauważyć, że nauczyciele ocenieni na jakość średnią, mieli najwięcej odstający wyników.
 
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+plot2 <- ggplot(czynniki3, aes_string(x = "Parental_Education_Level", y = "Exam_Score", fill = "Parental_Education_Level")) +
+  geom_boxplot(color = "black") +
+  labs(title = "Boxplot of Exam_Score by Parental_Education_Level", x = "Parental Education Level", y = "Exam Score") +
+  scale_fill_manual(values = rainbow(length(unique(czynniki3[["Parental_Education_Level"]])))) +
+  theme_minimal()
+print(plot2)
+```
+
 Na podstawie wykresu poziom wykształcenia rodziców, a wyniku egzaminu, możemy zauważyć, że im wyższe wykształcenie rodziców, tym wyniki osiągane przez uczniów były większe. Z drugiej strony możemy zauważyć asymetryczność dla rodziców z wykształceniem wyższym. Najwięcej odstających wartośći jest dla wyników uczniów, których rodzice mają wykształcene policealne.
 
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+plot3 <- ggplot(czynniki3, aes_string(x = "Motivation_Level", y = "Exam_Score", fill = "Motivation_Level")) +
+  geom_boxplot(color = "black") +
+  labs(title = "Boxplot of Exam_Score by Motivation_Level", x = "Motivation Level", y = "Exam Score") +
+  scale_fill_manual(values = rainbow(length(unique(czynniki3[["Motivation_Level"]])))) +
+  theme_minimal()
+print(plot3)
+```
+
 Na podstawie wykresu poziom motywacji, a wyniku egzaminu, możemy zauważyć, że im wyższa motywacja, tym wyniki osiągane przez uczniów były większe. Z drugiej strony możemy zauważyć asymetryczność dla motywacji niskiej i wysokiej. Najwięcej odstających wartośći jest dla wyników uczniów, z motywacją średnią.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+plot4 <- ggplot(czynniki3, aes_string(x = "School_Type", y = "Exam_Score", fill = "School_Type")) +
+  geom_boxplot(color = "black") +
+  labs(title = "Boxplot of Exam_Score by School_Type", x = "School Type", y = "Exam Score") +
+  scale_fill_manual(values = rainbow(length(unique(czynniki3[["School_Type"]])))) +
+  theme_minimal()
+print(plot4)
+```
 
 Na podstawie wykresu typ szkoły, a wyniku egzaminu, możemy zauważyć, że wyniki dla obu szkół rozkładają się podobnie symetrycznie. Z druegiej strony możemy zauważyć, więcej wyników odstającyh dla uczniów ze szkół publicznych.
 
@@ -261,15 +288,17 @@ Na podstawie wykresu typ szkoły, a wyniku egzaminu, możemy zauważyć, że wyn
 Tworzymy histogramy dla zmiennych liczbowych jak, godziny nauki, liczba godzin snu, liczba sesji korepetycji w miesiącu, średnia liczba godzin aktywności fizycznej, aby zrozumieć rozkład każdej zmiennej i zauważyć ewentualne skupienia lub wartości odstające.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-numeric_vars <- c("Hours_Studied", "Sleep_Hours", 
-                  "Tutoring_Sessions", "Physical_Activity")
+plots <- list()
+numeric_vars <- c("Hours_Studied", "Sleep_Hours", "Tutoring_Sessions", "Physical_Activity")
 for (var in numeric_vars) {
   hist_plot <- ggplot(czynniki3, aes_string(x = var)) +
     geom_histogram(bins = 30, fill = "#0c4c8a", color = "black") +
     labs(title = paste("Histogram of", var), x = var, y = "Frequency") +
     theme_minimal()
-  print(hist_plot)
+  plots[[var]] <- hist_plot
 }
+(plots[["Hours_Studied"]] | plots[["Sleep_Hours"]]) / 
+(plots[["Tutoring_Sessions"]] | plots[["Physical_Activity"]])
 ```
 
 Możemy zauważyć wobec rozkładów liczby godzin nauki, snu, oraz aktywności fizycznej mniej więcej symetryczne rozkłady, które nie mają większych odstających wartości. Z drugiej strony, na wykresie średniej liczby sesji korepetycji w miesiącu, możemy zaobserwować skośność prawostronną, gdzie większość uczniów ma maksymalnie do około 2 sesji miesięcznie, a reszta potrafi mieć nawet do 8 sesji miesięcznie.
@@ -279,14 +308,16 @@ Możemy zauważyć wobec rozkładów liczby godzin nauki, snu, oraz aktywności 
 Tworzymy wykresy punktowe (scatter plots) dla zmiennych liczbowych, takich jak frekwencja, oraz poprzedni wynik egzaminu w odniesieniu do wyniku egzaminu.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
+scatter_plots <- list()
 numeric_vars <- c("Attendance", "Previous_Scores")
 for (var in numeric_vars) {
   scatter_plot <- ggplot(czynniki3, aes_string(x = var, y = "Exam_Score")) +
     geom_point(color = "#0c4c8a") +
     labs(title = paste("Scatter Plot of Exam_Score vs", var), x = var, y = "Exam Score") +
     theme_minimal()
-  print(scatter_plot)
+  scatter_plots[[var]] <- scatter_plot
 }
+scatter_plots[["Attendance"]] | scatter_plots[["Previous_Scores"]]
 ```
 
 Na podstawie wykresu punktowego wynik egzaminu, a frekwencja możemy zauważyć pewien trend, który ukazuje, że im większa frekwencja tym średnio wynik egzaminu był wyższy. Dodatkowo możemy zauważyć pewne odstające wartości, które osiągał znacząco większe wyniki od średniej.
@@ -299,8 +330,10 @@ Na podstawie wykresu punktowego wynik egzaminu, a poprzedni wynik egzaminu może
 
 Obliczamy podstawowe statystyki, między innymi takie jak, minimum, maksimum, mediana, kwartyle, średnia i odchylenie standardowe.
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 str(czynniki3$Exam_Score)  # Sprawdzenie struktury danych
+```
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Obliczanie poszczególnych statystyk (testowe bo inaczej nie działało)
 Min <- min(czynniki3$Exam_Score, na.rm = TRUE)
 Max <- max(czynniki3$Exam_Score, na.rm = TRUE)
@@ -312,32 +345,31 @@ Odch_std <- sd(czynniki3$Exam_Score, na.rm = TRUE)
 IQR_value <- IQR(czynniki3$Exam_Score, na.rm = TRUE)
 Skosnosc <- skewness(czynniki3$Exam_Score, na.rm = TRUE)
 Kurtoza_value <- kurtosis(czynniki3$Exam_Score, na.rm = TRUE)
-print(c(Min, Max, Kwartyl_dolny, Mediana, Kwartyl_gorny, Srednia, Odch_std, IQR_value, Skosnosc, Kurtoza_value))
 Odch_std_pct <- (Odch_std / Srednia) * 100
 Odch_cwiartkowe_pct <- (IQR_value / Mediana) * 100
 Odchylenie_cwiartkowe <- IQR_value / 2
-print(c(Odch_std_pct, Odch_cwiartkowe_pct, Odchylenie_cwiartkowe))
 statystyki <- data.frame(
   Min = round(Min, 3),
   Max = round(Max, 3),
-  "Kwartyl dolny" = round(Kwartyl_dolny, 3),
+  "Kwartyl_dolny" = round(Kwartyl_dolny, 3),
   Mediana = round(Mediana, 3),
-  "Kwartyl górny" = round(Kwartyl_gorny, 3),
+  "Kwartyl_górny" = round(Kwartyl_gorny, 3),
   Średnia = round(Srednia, 3),
-  "Odch. std." = round(Odch_std, 3),
+  "Odchylenie_standardowe" = round(Odch_std, 3),
   IQR = round(IQR_value, 3),
   "Skośność" = round(Skosnosc, 3),
   "Kurtoza" = round(Kurtoza_value, 3),
-  "Odch. std. w %" = round(Odch_std_pct, 3),
-  "Odch. ćwiartkowe w %" = round(Odch_cwiartkowe_pct, 3),
-  "Odchylenie ćwiartkowe" = round(Odchylenie_cwiartkowe, 3)
+  "Odchylenie_standardowe%" = paste0(round(Odch_std_pct, 3), "%"),
+  "Odchylenie_ćwiartkowe%" = paste0(round(Odch_cwiartkowe_pct, 3), "%"),
+  "Odchylenie_ćwiartkowe" = round(Odchylenie_cwiartkowe, 3)
 )
 statystyki <- t(statystyki)
 statystyki <- as.data.frame(statystyki)
 colnames(statystyki) <- c("Wartości")
 statystyki$Statystyki <- rownames(statystyki)
-statystyki <- statystyki[, c("Statystyki", "Wartości")]
-print(statystyki)
+rownames(statystyki) <- NULL
+kable(statystyki, format = "html", caption = "Statystyki opisowe dla zmiennej 'Exam_Score'") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = T)
 ```
 
 Po przeprowadzonej analizie statystyki opisowej możemy zobaczyć, że średnia oraz mediana są zbliżone około 67. Pomimo tego skośność wychodzi prawostronna, co oznacza, że występują wartości odstające dążące wyniku 100. Dodatkowo, kurtoza potwierdza spiczastość samego rozkładu
@@ -346,7 +378,7 @@ Po przeprowadzonej analizie statystyki opisowej możemy zobaczyć, że średnia 
 
 Tworzymy macierz korelacji, by zbadać, jak różne czynniki są ze sobą powiązane, aby zidentyfikować silne korelacje, które mogą wskazywać na potencjalne przyczyny wysokich lub niskich wyników egzaminów.
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r fig.height=8, fig.width=10, message=FALSE, warning=FALSE, include=FALSE}
 czynniki_kor <- czynniki3
 czynniki_kor$Parental_Involvement <- as.numeric(factor(czynniki_kor$Parental_Involvement, levels = c("Low", "Medium", "High"), labels = c(1, 2, 3)))
 czynniki_kor$Access_to_Resources <- as.numeric(factor(czynniki_kor$Access_to_Resources, levels = c("High", "Medium", "Low"), labels = c(1, 2, 3)))
@@ -368,6 +400,8 @@ czynniki_kor$Peer_Influence <- ifelse(czynniki_kor$Peer_Influence == "Negative",
 czynniki_kor$Gender <- ifelse(czynniki_kor$Gender == "Male", 1, 0)
 czynniki_kor$School_Type <- ifelse(czynniki_kor$School_Type == "Public", 0,
                                    ifelse(czynniki_kor$School_Type == "Private", 1, NA))
+```
+```{r fig.height=8, fig.width=10}
 cor_matrix <- cor(czynniki_kor, use = "complete.obs")
 corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
          tl.col = "black", tl.srt = 45)
@@ -391,7 +425,7 @@ ggscatterstats(
 )
 ```
 
-Choć ostateczny wynik był spodziewany, to analiza wykazała, że liczba godzin nauki ma istotny wpływ na wynik egazminu, współczynnik p\<0,05 (przyjęty poziom istotności)
+Choć ostateczny wynik był spodziewany, to analiza wykazała, że liczba godzin nauki ma istotny wpływ na wynik egazminu, współczynnik p<0,05 (przyjęty poziom istotności)
 
 ### 5.2. Test Korelacji Exam_Score vs Previous_Scores
 
@@ -412,7 +446,7 @@ ggscatterstats(
 
 Przeprowadzony test wykazał, że wcześniejszy wynik ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05 (przyjęty poziom istotności).
 
-### 5.3. Model regresji liniowej Exam_Score \~ Physical_Activity + Sleep_Hours
+### 5.3. Model regresji liniowej Exam_Score ~ Physical_Activity + Sleep_Hours
 
 Analizujemy zależność liniową Wyniku Egzaminu wobec Czasu Aktywności Fizycznej, oraz Średniego Czasu Snu (Przyjęty poziom istotności alfa = 0,05).
 
@@ -431,7 +465,7 @@ plot1 <- ggcoefstats(
 print(plot1)
 ```
 
-Przeprowadzona zależność liniowa wykazała, że aktywność fizyczna ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05 (przyjęty poziom istotności). Z drugiej strony czas snu jest nie istonty na wynik egzaminu, współczynnik p\>0,05 (przyjęty poziom istotności)
+Przeprowadzona zależność liniowa wykazała, że aktywność fizyczna ma istotny wpływ na wynik egzaminu, współczynnik p<0,05 (przyjęty poziom istotności). Z drugiej strony czas snu jest nie istonty na wynik egzaminu, współczynnik p>0,05 (przyjęty poziom istotności)
 
 ### 5.4. Test Korelacji Exam_Score vs Attendance
 
@@ -449,7 +483,7 @@ ggscatterstats(
 )
 ```
 
-Przeprowadzony test wykazał, że frekwencja ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05(przyjęty poziom istotności).
+Przeprowadzony test wykazał, że frekwencja ma istotny wpływ na wynik egzaminu, współczynnik p<0,05(przyjęty poziom istotności).
 
 ### 5.5. Analiza porównawcza Exam_Score według Gender
 
@@ -467,7 +501,7 @@ ggbetweenstats(
 )
 ```
 
-Przeprowadzony test wykazał, że wynik egzaminu, nie jest zależny od płci, współczynnik p\>0,05 (przyjęty poziom istotności).
+Przeprowadzony test wykazał, że wynik egzaminu, nie jest zależny od płci, współczynnik p>0,05 (przyjęty poziom istotności).
 
 ### 5.6. Analiza porównawcza Exam_Score według Access_to_Resources
 
@@ -485,7 +519,7 @@ ggbetweenstats(
 )
 ```
 
-Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu dostępu do zasobów edukacyjnych, współczynnik p\<0,05 (przyjęty poziom istotności).
+Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu dostępu do zasobów edukacyjnych, współczynnik p<0,05 (przyjęty poziom istotności).
 
 ### 5.7. Analiza porównawcza Exam_Score według Parental_Involvement
 
@@ -503,7 +537,7 @@ ggbetweenstats(
 )
 ```
 
-Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu zaangażowania rodziców, współczynnik p\<0,05 (przyjęty poziom istotności).
+Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu zaangażowania rodziców, współczynnik p<0,05 (przyjęty poziom istotności).
 
 ## 6. Podsumowanie
 
