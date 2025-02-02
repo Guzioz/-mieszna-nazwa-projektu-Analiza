@@ -409,7 +409,7 @@ corrplot(cor_matrix, method = "color", type = "upper", order = "hclust",
 
 ## 5. Testowanie i wnioskowanie statystyczne
 
-### 5.1. Test Korelacji Exam_Score vs Hours_Studied
+### 5.1 Test Korelacji Exam_Score vs Hours_Studied
 
 Analizujemy zależność korelacji Liczby Godzin Nauki, wobec Wyniu Egazminu (Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
 
@@ -427,7 +427,7 @@ ggscatterstats(
 
 Choć ostateczny wynik był spodziewany, to analiza wykazała, że liczba godzin nauki ma istotny wpływ na wynik egazminu, współczynnik p<0,05 (przyjęty poziom istotności)
 
-### 5.2. Test Korelacji Exam_Score vs Previous_Scores
+### 5.2 Test Korelacji Exam_Score vs Previous_Scores
 
 Analizujemy zależność korelacji Wcześniejszego Wyniku, wobec Wyniu Egazminu (Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
 
@@ -446,7 +446,7 @@ ggscatterstats(
 
 Przeprowadzony test wykazał, że wcześniejszy wynik ma istotny wpływ na wynik egzaminu, współczynnik p\<0,05 (przyjęty poziom istotności).
 
-### 5.3. Model regresji liniowej Exam_Score ~ Physical_Activity + Sleep_Hours
+### 5.3 Model regresji liniowej Exam_Score ~ Physical_Activity + Sleep_Hours
 
 Analizujemy zależność liniową Wyniku Egzaminu wobec Czasu Aktywności Fizycznej, oraz Średniego Czasu Snu (Przyjęty poziom istotności alfa = 0,05).
 
@@ -467,7 +467,7 @@ print(plot1)
 
 Przeprowadzona zależność liniowa wykazała, że aktywność fizyczna ma istotny wpływ na wynik egzaminu, współczynnik p<0,05 (przyjęty poziom istotności). Z drugiej strony czas snu jest nie istonty na wynik egzaminu, współczynnik p>0,05 (przyjęty poziom istotności)
 
-### 5.4. Test Korelacji Exam_Score vs Attendance
+### 5.4 Test Korelacji Exam_Score vs Attendance
 
 Analizujemy zależność korelacji Frekwencji, wobec Wyniu Egazminu (Przyjęty poziom istotności alfa = 0,05). Do analizy zastosujemy test Pearsona.
 
@@ -485,7 +485,7 @@ ggscatterstats(
 
 Przeprowadzony test wykazał, że frekwencja ma istotny wpływ na wynik egzaminu, współczynnik p<0,05(przyjęty poziom istotności).
 
-### 5.5. Analiza porównawcza Exam_Score według Gender
+### 5.5 Analiza porównawcza Exam_Score według Gender
 
 Porównujemy wielkości efektów dla Wyniu Egazminu, ze względu na płeć (Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy statystyke g Hedge'a.
 
@@ -503,7 +503,7 @@ ggbetweenstats(
 
 Przeprowadzony test wykazał, że wynik egzaminu, nie jest zależny od płci, współczynnik p>0,05 (przyjęty poziom istotności).
 
-### 5.6. Analiza porównawcza Exam_Score według Access_to_Resources
+### 5.6 Analiza porównawcza Exam_Score według Access_to_Resources
 
 Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Dostęp do Zasobów Edukacyjnych (Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
 
@@ -521,7 +521,7 @@ ggbetweenstats(
 
 Przeprowadzony test wykazał, że wynik egzaminu, jest zależny od poziomu dostępu do zasobów edukacyjnych, współczynnik p<0,05 (przyjęty poziom istotności).
 
-### 5.7. Analiza porównawcza Exam_Score według Parental_Involvement
+### 5.7 Analiza porównawcza Exam_Score według Parental_Involvement
 
 Wykonujemy test porównania średnich dla Wyniu Egazminu, ze względu na Poziom Zaangażowania Rodziców (Przyjęty poziom istotności alfa = 0,05). Do analizy wykorzystamy metodę Gamesa-Howella.
 
